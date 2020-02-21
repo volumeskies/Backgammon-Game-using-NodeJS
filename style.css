@@ -1,0 +1,48 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+
+:root{
+    --blue: #A6C9E3;
+    --yellow: #ECBC81;
+    --coral: #D86868;
+    --magenta: #7F2E63;
+    --purple: #29193F;
+    --white: #E6E1DE;
+}
+
+body{
+    background-color: var(--blue);
+    height: 100%;
+}
+
+.form{
+    display: table; 
+    height: 100%; 
+    margin: 0 auto;
+}
+
+form{
+    display: table-cell; 
+    vertical-align: middle;
+}
+
+.elements{
+    background-color: var(--white);
+    width: 600px;
+    height: 650px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 5%;
+    margin: auto;
+}
+
+p{
+    font-family: 'Montserrat Alternates', sans-serif;
+}
+
+button{
+    font-family: 'Montserrat Alternates', sans-serif;
+}
