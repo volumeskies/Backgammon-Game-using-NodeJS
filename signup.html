@@ -9,23 +9,20 @@
         <link href="https://fonts.googleapis.com/css?family=Montserrat+Alternates&display=swap&subset=cyrillic,cyrillic-ext" rel="stylesheet">
     </head>
     <body>
-        <main>
-            <div class="form">
-                <form action="/register" method="POST">
-                    <div class="elements">
-                        <p>Имя:</p>
-                        <input type="name" name="name">
-                        <p>Логин:</p>
-                        <input type="login" name="login">
-                        <p>Пароль:</p>
-                        <input type="password" name="password">
-                        <p>Подтвердите пароль:</p>
-                        <input type="password_correct" name="password_correct">
-                        <button type="submit">Зарегистрироваться</button>
-                        <button type="submit" formaction="/signin">Войти</button>
-                    </div>
-                </form>
+        <form action="/register" method="POST">
+            <div class="elements">
+                <p class="first__elem">Имя:</p>
+                <input type="name" name="name">
+                <p>Логин:</p>
+                <input type="login" name="login">
+                <p>Пароль:</p>
+                <input type="password" name="password">
+                <p>Подтвердите пароль:</p>
+                <input type="password_correct" name="password_correct">
+                <button type="submit">Зарегистрироваться</button>
+                <p>Уже зарегистрированы?</p>
+                <button type="submit" formaction="/signin">Войти</button>
             </div>
-        </main>
+        </form>
     </body>
 </html>
