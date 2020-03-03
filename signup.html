@@ -6,23 +6,24 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link href="style.css" rel="stylesheet" type="text/css">
-        <link href="https://fonts.googleapis.com/css?family=Montserrat+Alternates&display=swap&subset=cyrillic,cyrillic-ext" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700&display=swap&subset=cyrillic" rel="stylesheet">
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
     </head>
     <body>
-        <form action="/register" method="POST">
+        <form action="/signup">
             <div class="elements">
-                <p class="first__elem">Имя:</p>
-                <input type="name" name="name">
-                <p>Логин:</p>
-                <input type="login" name="login">
-                <p>Пароль:</p>
-                <input type="password" name="password">
-                <p>Подтвердите пароль:</p>
-                <input type="password_correct" name="password_correct">
-                <button type="submit">Зарегистрироваться</button>
-                <p>Уже зарегистрированы?</p>
-                <button type="submit" formaction="/signin">Войти</button>
+                <p class="first__elem">Регистрация</p>
+                <input type="text" name="name" placeholder="Имя">
+                <input type="text" name="login" placeholder="Логин">
+                <input type="password" name="password" placeholder="Пароль">
+                <input type="password" name="password_correct" placeholder="Повторите пароль">
+                <button type="submit" class="signup__button">Зарегистрироваться</button>
+                <p class="signin__p">Уже зарегистрированы?</p>
+                <a href="/">Вход</a>
             </div>
         </form>
+        <script src="socket.io/socket.io.js"></script>
+        <script src="client.js"></script>
+        <script>var socket = io();</script>
     </body>
 </html>
