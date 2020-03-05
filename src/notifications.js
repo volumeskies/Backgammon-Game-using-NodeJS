@@ -1,20 +1,22 @@
-export default {
-    logNotification: (login)=>{
-        if(login.length > 50){
-            console.log("NO");
-            return false;
-        }
-    },
-    nameNotification: (name)=>{
-        if(name.length > 255){
-            console.log("NO");
-            return false;
-        }
-    },
-    passNotification: (password)=>{
-        if(password.length > 255){
-            console.log("NO");
-            return false;
-        }
+export class Notifications {
+    constructor(){
     }
-};
+    
+    error(message_){
+        let popup = document.createElement('div');
+        popup.className = 'popup__error';
+        popup.innerHTML = `<span>${message_}</span>`;
+        let container = [...document.getElementsByClassName('notifications')];
+        container[0].appendChild(popup);
+        setTimeout(()=> {popup.remove();}, 7000);
+    }
+    success(message_){
+        let popup = document.createElement('div');
+        popup.className = 'popup__success';
+        popup.innerHTML = `<span>${message_}</span>`;
+        let container = [...document.getElementsByClassName('notifications')];
+        container[0].appendChild(popup);
+        setTimeout(()=> {popup.remove();}, 7000);
+    }
+}
+export let Notify = new Notifications();

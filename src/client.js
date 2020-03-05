@@ -1,13 +1,14 @@
-import {default as notificator} from '../src/notifications';
+import { validate } from '../src/validation.js';
 var socket = io.connect();
 socket.on('connect', () => {
         console.log("client connection");
         //отправляем данные с "Войти" на сервер
         $('.signin__button').on('click', event =>{
-                console.log('user_signin');
                 event.preventDefault();
                 let userLogin = $('input[name=login]').val();
                 let userPassword = $('input[name=password]').val();
+                if(!validate.validation(userLogin, userPassword))
+                        return;
                 socket.emit('user_signin', {
                         login: userLogin,
                         password: userPassword,
@@ -16,11 +17,12 @@ socket.on('connect', () => {
         //отправляем данные с "Зарегистрироваться" на сервер
         $('.signup__button').on('click', event =>{
                 event.preventDefault();
-                console.log('user signup');
                 let userLogin = $('input[name=login]').val();
                 let userPassword = $('input[name=password]').val();
-                let userPasswordConfirm = $('input[name=pasword_correct]').val();
+                let userPasswordConfirm = $('input[name=password_correct]').val();
                 let userName = $('input[name=name]').val();
+                if(!validate.registerValidation(userLogin, userPassword, userPasswordConfirm, userName))
+                        return;
                 socket.emit('user_signup', {
                         username: userName,
                         login: userLogin,

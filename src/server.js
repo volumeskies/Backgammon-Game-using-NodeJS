@@ -1,9 +1,11 @@
-const express = require("express");
-const bodyParser = require("body-parser");
+import { Notify } from './notifications.js';
+import express from 'express';
+import bodyParser from 'body-parser';
+import session from 'express-session';
 const app = express();
-const crypto = require('crypto');
-const db = require("mysql");
-var urlencodedParser = bodyParser.urlencoded({extended: false});
+import db from 'mysql';
+import ioClient from 'socket.io';
+const urlencodedParser = bodyParser.urlencoded({extended: false});
 
 /* MYSQL CONNECTION*/
 var con = db.createConnection({
@@ -18,6 +20,13 @@ con.connect(()=>{
 });
 
 /* APP */
+app.use(session({
+	secret: 'keyboard cat',
+	resave: false,
+	saveUninitialized: true,
+	cookie: { secure: true }
+}));
+
 app.get("/", urlencodedParser, (req, res)=>{
     res.sendFile('signin.html', { root: '../public/'});
 });
@@ -34,10 +43,10 @@ app.post("/signin", urlencodedParser, (req, res)=>{
 app.use(express.static('../public'));
 
 /* SERVER LISTENING */
-server = app.listen(8081);
+const server = app.listen(8081);
 
 /* SOCKET.IO */
-var io = require('socket.io')(server);
+const io = ioClient(server);
 io.sockets.on('connection', (socket)=>{
 	console.log("server connection");
 	console.log(socket.id);
