@@ -2,9 +2,12 @@ const path = require('path');
 
 module.exports = {
     mode: 'production',
-    entry: path.resolve(__dirname, 'src') + '/client.js',
+    entry: {
+        main: path.resolve(__dirname, 'src') + '/client.js',
+        game: path.resolve(__dirname, 'src') + '/gameplay.js',
+    },
     output: {
-        filename: 'main.js',
+        filename: '[name].js',
         path: path.resolve(__dirname, 'public')
     },
     optimization: {
@@ -27,4 +30,5 @@ module.exports = {
             }
         ]
     },
+    watch: true
 }

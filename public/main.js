@@ -81,7 +81,7 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 0);
+/******/ 	return __webpack_require__(__webpack_require__.s = 1);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -90,44 +90,75 @@
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
   if (true) {
-    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(1)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
+    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [exports], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
 				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
 				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
   } else { var mod; }
-})(typeof globalThis !== "undefined" ? globalThis : typeof self !== "undefined" ? self : this, function (_validation) {
+})(typeof globalThis !== "undefined" ? globalThis : typeof self !== "undefined" ? self : this, function (_exports) {
   "use strict";
 
-  var socket = io.connect();
-  socket.on('connect', function () {
-    console.log("client connection"); //отправляем данные с "Войти" на сервер
-
-    $('.signin__button').on('click', function (event) {
-      event.preventDefault();
-      var userLogin = $('input[name=login]').val();
-      var userPassword = $('input[name=password]').val();
-      if (!_validation.validate.validation(userLogin, userPassword)) return;
-      socket.emit('user_signin', {
-        login: userLogin,
-        password: userPassword
-      });
-    }); //отправляем данные с "Зарегистрироваться" на сервер
-
-    $('.signup__button').on('click', function (event) {
-      event.preventDefault();
-      var userLogin = $('input[name=login]').val();
-      var userPassword = $('input[name=password]').val();
-      var userPasswordConfirm = $('input[name=password_correct]').val();
-      var userName = $('input[name=name]').val();
-      if (!_validation.validate.registerValidation(userLogin, userPassword, userPasswordConfirm, userName)) return;
-      socket.emit('user_signup', {
-        username: userName,
-        login: userLogin,
-        password: userPassword,
-        correct_password: userPasswordConfirm
-      });
-    });
+  Object.defineProperty(_exports, "__esModule", {
+    value: true
   });
+  _exports.Notify = _exports.Notifications = void 0;
+
+  function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
+
+  function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
+
+  function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
+
+  function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+  function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+  function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+  var Notifications = /*#__PURE__*/function () {
+    function Notifications() {
+      _classCallCheck(this, Notifications);
+    }
+
+    _createClass(Notifications, [{
+      key: "error",
+      value: function error(message_) {
+        var popup = document.createElement('div');
+        popup.className = 'popup__error';
+        popup.innerHTML = "<span>".concat(message_, "</span>");
+
+        var container = _toConsumableArray(document.getElementsByClassName('notifications'));
+
+        container[0].appendChild(popup);
+        setTimeout(function () {
+          popup.remove();
+        }, 7000);
+      }
+    }, {
+      key: "success",
+      value: function success(message_) {
+        console.log(message_);
+        var popup = document.createElement('div');
+        popup.className = 'popup__success';
+        popup.innerHTML = "<span>".concat(message_, "</span>");
+
+        var container = _toConsumableArray(document.getElementsByClassName('notifications'));
+
+        container[0].appendChild(popup);
+        setTimeout(function () {
+          popup.remove();
+        }, 7000);
+      }
+    }]);
+
+    return Notifications;
+  }();
+
+  _exports.Notifications = Notifications;
+  var Notify = new Notifications();
+  _exports.Notify = Notify;
 });
 
 /***/ }),
@@ -136,7 +167,56 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
   if (true) {
-    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [exports, __webpack_require__(2)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
+    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(2), __webpack_require__(0)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
+				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
+				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
+				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+  } else { var mod; }
+})(typeof globalThis !== "undefined" ? globalThis : typeof self !== "undefined" ? self : this, function (_validation, _notifications) {
+  "use strict";
+
+  var socket = io.connect();
+  $('.signin__button').on('click', function (event) {
+    event.preventDefault();
+    var userLogin = $('input[name=login]').val();
+    var userPassword = $('input[name=password]').val();
+    if (!_validation.validate.validation(userLogin, userPassword)) return;
+    socket.emit('user_signin', {
+      login: userLogin,
+      password: userPassword
+    });
+  }); //отправляем данные с "Зарегистрироваться" на сервер
+
+  $('.signup__button').on('click', function (event) {
+    event.preventDefault();
+    var userLogin = $('input[name=login]').val();
+    var userPassword = $('input[name=password]').val();
+    var userPasswordConfirm = $('input[name=password_correct]').val();
+    var userName = $('input[name=name]').val();
+    if (!_validation.validate.registerValidation(userLogin, userPassword, userPasswordConfirm, userName)) return;
+    socket.emit('user_signup', {
+      username: userName,
+      login: userLogin,
+      password: userPassword,
+      correct_password: userPasswordConfirm
+    });
+  });
+  socket.on('user_signin_notification', function (data) {
+    console.log('dsds');
+    if (data.val == false) _notifications.Notify.error('Неверно введён логин или пароль!');else if (data.val == true) _notifications.Notify.success('Успешно!');
+  });
+  socket.on('redirect', function (url) {
+    window.location.href = url;
+  });
+});
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
+  if (true) {
+    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [exports, __webpack_require__(0)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
 				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
 				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
@@ -169,7 +249,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 
       this.login = true;
       this.password = true;
-      this.confirm_password = false;
+      this.confirm_password = true;
       this.username = true;
     }
 
@@ -216,6 +296,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
         this.passwordValidation(password_);
         this.resetFields();
         this.highlightFields();
+        return this.login && this.password;
       }
     }, {
       key: "registerValidation",
@@ -226,6 +307,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
         this.confirmPasswordValidation(password_, confirm_);
         this.resetFields();
         this.highlightFields();
+        return this.login && this.password && this.username && this.confirm;
       }
     }, {
       key: "loginValidation",
@@ -312,82 +394,6 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
   _exports.Validation = Validation;
   var validate = new Validation();
   _exports.validate = validate;
-});
-
-/***/ }),
-/* 2 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
-  if (true) {
-    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [exports], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
-				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
-				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
-				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-  } else { var mod; }
-})(typeof globalThis !== "undefined" ? globalThis : typeof self !== "undefined" ? self : this, function (_exports) {
-  "use strict";
-
-  Object.defineProperty(_exports, "__esModule", {
-    value: true
-  });
-  _exports.Notify = _exports.Notifications = void 0;
-
-  function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
-
-  function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
-
-  function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
-
-  function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
-
-  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-  function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-  function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
-  var Notifications = /*#__PURE__*/function () {
-    function Notifications() {
-      _classCallCheck(this, Notifications);
-    }
-
-    _createClass(Notifications, [{
-      key: "error",
-      value: function error(message_) {
-        var popup = document.createElement('div');
-        popup.className = 'popup__error';
-        popup.innerHTML = "<span>".concat(message_, "</span>");
-
-        var container = _toConsumableArray(document.getElementsByClassName('notifications'));
-
-        container[0].appendChild(popup);
-        setTimeout(function () {
-          popup.remove();
-        }, 7000);
-      }
-    }, {
-      key: "success",
-      value: function success(message_) {
-        var popup = document.createElement('div');
-        popup.className = 'popup__success';
-        popup.innerHTML = "<span>".concat(message_, "</span>");
-
-        var container = _toConsumableArray(document.getElementsByClassName('notifications'));
-
-        container[0].appendChild(popup);
-        setTimeout(function () {
-          popup.remove();
-        }, 7000);
-      }
-    }]);
-
-    return Notifications;
-  }();
-
-  _exports.Notifications = Notifications;
-  var Notify = new Notifications();
-  _exports.Notify = Notify;
 });
 
 /***/ })

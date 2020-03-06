@@ -3,7 +3,7 @@ export class Validation {
     constructor(){
         this.login = true;
         this.password = true;
-        this.confirm_password = false;
+        this.confirm_password = true;
         this.username = true;
     }
     
@@ -36,6 +36,7 @@ export class Validation {
         this.passwordValidation(password_);
         this.resetFields();
         this.highlightFields();
+        return (this.login && this.password);
     }
 
     registerValidation(login_, password_, confirm_, username_){
@@ -45,6 +46,7 @@ export class Validation {
         this.confirmPasswordValidation(password_, confirm_);
         this.resetFields();
         this.highlightFields();
+        return (this.login && this.password && this.username && this.confirm);
     }
 
     loginValidation(login_){

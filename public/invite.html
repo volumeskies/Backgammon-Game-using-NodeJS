@@ -10,16 +10,13 @@
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
     </head>
     <body>
-        <form action="/">
-            <div class="elements">
-                <p class="first__elem__signin">Добро пожаловать!</p>
+        <form action="/game">
+            <div class="elements elements__invite">
+                <p class="first__elem__invite">Пригласить друга:</p>
                 <input type="text" name="login" placeholder="Логин">
-                <input type="password" name="password" placeholder="Пароль">
-                <form action='/invite'>
-                    <button type="submit" class="signin__button">Вход</button>
-                </form>
-                <p class="signin__p">Новый пользователь?</p>
-                <a href="signup">Зарегистрироваться</a>
+                <button type="submit" class="invite__button">Играть</button>
+                <p class="invite__p">Хотите войти под другим логином?</p>
+                <a href="signup">Войти</a>
             </div>
         </form>
         <script src="socket.io/socket.io.js"></script>

@@ -11,6 +11,7 @@ export class Notifications {
         setTimeout(()=> {popup.remove();}, 7000);
     }
     success(message_){
+        console.log(message_)
         let popup = document.createElement('div');
         popup.className = 'popup__success';
         popup.innerHTML = `<span>${message_}</span>`;

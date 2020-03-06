@@ -18,7 +18,7 @@ body{
     position: relative;
     width: 100%;
     height: 100vh;
-    background: linear-gradient(45deg, rgba(223,129,129,0.8) 0%, rgba(241,205,162,1) 100%);
+    background: linear-gradient(45deg, rgba(223,129,129,0.6) 10%, rgba(241,205,162,0.6) 70%);
 }
 
 form{
@@ -142,7 +142,7 @@ input[type="password"]{
 .notifications{
     float: right;
     width: 300px;
-    height: 100vh;
+    height: 90vh;
     margin: 20px 100px;
     display: flex;
     flex-direction: column-reverse;
@@ -161,6 +161,7 @@ input[type="password"]{
     display: flex;
     flex-direction: column;
     justify-content: center;
+    margin-bottom: 15px;
 }
 .popup__error span{
     font-family: 'Open Sans';
@@ -173,19 +174,16 @@ input[type="password"]{
 .popup__success{
     width: 300px;
     height: 80px;
-    font-family: 'Open Sans';
-    font-size: 16px;
-    color: #155724;
     background-color: #D4EDDA;
     background-image: url('./images/success.png');
     background-repeat: no-repeat;
     background-position: 26px 27px;
     background-size: 25px;
-    margin: 20px 100px;
     border: 2px solid #C3E6CB;
     display: flex;
     flex-direction: column;
     justify-content: center;
+    margin-bottom: 15px;
 }
 .popup__success span{
     font-family: 'Open Sans';
@@ -193,4 +191,27 @@ input[type="password"]{
     font-size: 16px;
     color: #155724;
     margin-left: 70px;
+}
+
+.first__elem__invite{
+    font-weight: 600;
+    margin-top: 23%;
+    margin-bottom: 8%;
+    font-size: 22px;
+}
+
+.elements__invite{
+    height: 350px;
+}
+
+.invite__p{
+    font-family: 'Open Sans';
+    font-weight: 300;
+    font-size: 16px;
+    margin: 30px 5px 0;
+}
+
+.invite__button{
+    border-radius: 10px;
+    padding: 10px 35px;
 }

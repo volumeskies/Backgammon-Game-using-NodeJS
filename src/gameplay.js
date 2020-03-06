@@ -3,7 +3,7 @@ var points_bottom = [].slice.call(document.getElementById('points_bottom').child
 var points = points_bottom.concat(points_top);
 console.log(points);
 
-checkers = [];
+var checkers = [];
 
 checker = {
     current_point: 1,
