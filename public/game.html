@@ -5,9 +5,13 @@
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link href="gamestyle.css" rel="stylesheet"><link href="https://fonts.googleapis.com/css?family=Montserrat+Alternates&display=swap&subset=cyrillic,cyrillic-ext" rel="stylesheet">
+        <link href="gamestyle.css" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700&display=swap&subset=cyrillic" rel="stylesheet">
     </head>
     <body>
+        <div class="dices first__player">
+            <h2 class="first__name name">Первый</h2>
+        </div>
         <div class="board">
             <div id="points_top">
                 <div id="thirteen" class="points-top"></div>
@@ -37,6 +41,9 @@
                 <div id="two" class="points-bottom"></div>
                 <div id="one" class="points-bottom"></div>
             </div>
+        </div>
+        <div class="dices second__player">
+            <h2 class="second__name name">Второй</h2>
         </div>
     </body>
     <script src="/game.js"></script>

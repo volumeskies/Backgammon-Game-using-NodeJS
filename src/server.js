@@ -7,7 +7,7 @@ import socket from 'socket.io';
 const urlencodedParser = bodyParser.urlencoded({extended: false});
 //const store = new session.MemoryStore;
 /* MYSQL CONNECTION*/
-var con = db.createConnection({
+const con = db.createConnection({
 	host: 'localhost',
 	user: 'root',
 	password: '',
@@ -32,8 +32,6 @@ app.get("/", urlencodedParser, (req, res)=>{
 app.get("/signup", urlencodedParser, (req, res)=>{
     res.sendFile('signup.html', { root: '../public/'});
 });
-
-
 
 app.get("/invite", urlencodedParser, (req, res)=>{
     res.sendFile('invite.html', { root: '../public/'});
@@ -65,7 +63,7 @@ io.use(function (socket, next) {
 
 io.sockets.on('connection', function(socket){
 	console.log("server connection");
-	console.log(socket.id);
+	console.log(socket.request.session.id);
 	socket.on('user_signup', data =>{
 		console.log('user signup server');
 		con.query('CALL REGISTER(?, ?, ?)', [data.username, data.login, data.password], function (error, result) {
