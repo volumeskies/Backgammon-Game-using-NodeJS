@@ -102,5 +102,51 @@ io.sockets.on('connection', function(socket){
 			} 
 		});
 	});
-});
 
+	socket.on('check_points', data =>{
+		console.log(data);
+		function checkPoints(data, callback){
+			if(con.query("CALL IS_POINT_FREE(?)", [data.from + data.dice_1], function (error, result){
+				if (error) throw error;
+				var res = JSON.parse(JSON.stringify(result[0]));
+				if(res[0].FALSE){
+					console.log('d1no');
+					callback('d1no');
+				}
+				else if(res[0].TRUE){
+					console.log('d1yes');
+					callback('d1yes');
+				}
+			}));
+			if(con.query("CALL IS_POINT_FREE(?)", [data.from + data.dice_2], function (error, result){
+				if (error) throw error;
+				var res = JSON.parse(JSON.stringify(result[0]));
+				if(res[0].FALSE){
+					console.log('d2no');
+					callback('d2no');
+				}
+				else if(res[0].TRUE){
+					console.log('d2yes');
+					callback('d2yes');
+				}
+			}));
+			if(con.query("CALL IS_MULTIPOINT_FREE(?, ?)", [data.from, data.dice_1 + data.dice_2], function (error, result){
+				if (error) throw error;
+				var res = JSON.parse(JSON.stringify(result[0]));
+				if(res[0].FALSE){
+					console.log('d3no');
+					callback('d3no');
+				}
+				else if(res[0].TRUE){
+					console.log('d3yes');
+					callback('d3yes');
+				}
+			}));
+		}
+	
+		checkPoints(data, (val)=>{
+			io.emit('check_answer', val);
+		});
+    	
+	})
+});

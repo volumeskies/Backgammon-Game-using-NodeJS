@@ -107,11 +107,17 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 
   function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
 
+  var socket = io.connect();
+
   var pointsTop = _toConsumableArray(document.getElementById('points_top').children);
 
   var pointsBottom = _toConsumableArray(document.getElementById('points_bottom').children).reverse();
 
   var points = pointsBottom.concat(pointsTop);
+  var dicesObj = {
+    first: 0,
+    second: 0
+  };
 
   function insertChecker(checkerClassName) {
     var checker = document.createElement('div');
@@ -138,18 +144,210 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
     }
   }
 
-  function showAvMovesDatabase(from, dice_1, dice_2) {
-    if (con.query("CALL IS_POINT_FREE(?, ?)", [from, dice_1], function () {})) ; //highlight
+  function parsePointsId(pointId) {
+    switch (pointId) {
+      case 'one':
+        return 1;
 
-    if (con.query("CALL IS_POINT_FREE(?, ?)", [from, dice_2], function () {})) ; //highlight
+      case 'two':
+        return 2;
 
-    if (con.query("CALL IS_MULTIPOINT_FREE(?, ?)", [from, dice_1 + dice_2], function () {})) ; //highlight
+      case 'three':
+        return 3;
+
+      case 'four':
+        return 4;
+
+      case 'five':
+        return 5;
+
+      case 'six':
+        return 6;
+
+      case 'seven':
+        return 7;
+
+      case 'eight':
+        return 8;
+
+      case 'nine':
+        return 9;
+
+      case 'ten':
+        return 10;
+
+      case 'eleven':
+        return 11;
+
+      case 'twelve':
+        return 12;
+
+      case 'thirteen':
+        return 13;
+
+      case 'fourteen':
+        return 14;
+
+      case 'fifteen':
+        return 15;
+
+      case 'sixteen':
+        return 16;
+
+      case 'seventeen':
+        return 17;
+
+      case 'eightteen':
+        return 18;
+
+      case 'nineteen':
+        return 19;
+
+      case 'twenty':
+        return 20;
+
+      case 'twentyone':
+        return 21;
+
+      case 'twentytwo':
+        return 22;
+
+      case 'twentythree':
+        return 23;
+
+      case 'twentyfour':
+        return 24;
+    }
   }
 
-  function showAvailableMoves(node, rolledDices) {
-    node.addEventListener('click', function () {
-      showAvMovesDatabase(node.parentNode, rolledDices[0], rolledDices[1]);
+  function highlightMoves(pointNumber) {
+    console.log('point number:', pointNumber);
+    points[pointNumber - 1].append(insertChecker('checker-move'));
+  }
+
+  function parseCheckAnswer(answ, dice_1, dice_2) {
+    switch (answ) {
+      case 'd1no':
+        break;
+
+      case 'd1yes':
+        highlightMoves(dice_1);
+        break;
+
+      case 'd2no':
+        break;
+
+      case 'd2yes':
+        highlightMoves(dice_2);
+        break;
+
+      case 'd3no':
+        break;
+
+      case 'd3yes':
+        highlightMoves(dice_1 + dice_2);
+        break;
+    }
+  }
+
+  function showAvMovesDatabase(from, dicesObj) {
+    from = parsePointsId(from);
+    console.log(from);
+    socket.emit('check_points', {
+      from: from,
+      dice_1: dicesObj.first,
+      dice_2: dicesObj.second
     });
+    socket.on('check_answer', function (data) {
+      parseCheckAnswer(data, from + dicesObj.first, from + dicesObj.second);
+    });
+  }
+
+  function getOpenCheckers() {
+    console.log(points);
+    var checkers = [];
+    var _iteratorNormalCompletion = true;
+    var _didIteratorError = false;
+    var _iteratorError = undefined;
+
+    try {
+      for (var _iterator = points[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        var elem = _step.value;
+
+        if (elem.className == 'points-bottom' && elem.childElementCount != 0) {
+          checkers.push(elem.firstChild);
+        }
+
+        if (elem.className == 'points-top' && elem.childElementCount != 0) {
+          checkers.push(elem.lastChild);
+        }
+      }
+    } catch (err) {
+      _didIteratorError = true;
+      _iteratorError = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion && _iterator["return"] != null) {
+          _iterator["return"]();
+        }
+      } finally {
+        if (_didIteratorError) {
+          throw _iteratorError;
+        }
+      }
+    }
+
+    return checkers;
+  }
+
+  function showAvailableMoves(rolledDices) {
+    var checkers = getOpenCheckers();
+    console.log('open checkers: ', checkers);
+    var _iteratorNormalCompletion2 = true;
+    var _didIteratorError2 = false;
+    var _iteratorError2 = undefined;
+
+    try {
+      var _loop = function _loop() {
+        var elem = _step2.value;
+        elem.addEventListener('mouseover', function () {
+          event.preventDefault();
+          elem.className += ' checker-hover';
+        });
+        elem.addEventListener('mouseout', function () {
+          event.preventDefault();
+          elem.className = elem.className.replace(/\bchecker-hover\b/ig, '');
+        });
+        elem.addEventListener('click', function () {
+          event.preventDefault();
+
+          if (elem.className.match(/\bchecker-clicked\b/ig)) {
+            elem.className = elem.className.replace(/\bchecker-clicked\b/ig, '');
+            return;
+          }
+
+          elem.className += ' checker-clicked';
+          showAvMovesDatabase(elem.parentNode.id, rolledDices);
+        });
+      };
+
+      for (var _iterator2 = checkers[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+        _loop();
+      }
+    } catch (err) {
+      _didIteratorError2 = true;
+      _iteratorError2 = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion2 && _iterator2["return"] != null) {
+          _iterator2["return"]();
+        }
+      } finally {
+        if (_didIteratorError2) {
+          throw _iteratorError2;
+        }
+      }
+    }
   }
 
   function randNumber() {
@@ -157,8 +355,15 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
     return Math.floor(rand);
   }
 
-  function rollTheDices() {
-    var dices = [randNumber(), randNumber()];
+  function rollTheDicesArray() {
+    for (var key in dicesObj) {
+      if (dicesObj.hasOwnProperty(key)) {
+        dicesObj[key] = randNumber();
+      }
+    }
+
+    var dices = [dicesObj.first, dicesObj.second];
+    console.log(dicesObj);
     return dices;
   }
 
@@ -166,13 +371,13 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
     var container = _toConsumableArray(document.getElementsByClassName('dices'));
 
     console.log(container);
-    var _iteratorNormalCompletion = true;
-    var _didIteratorError = false;
-    var _iteratorError = undefined;
+    var _iteratorNormalCompletion3 = true;
+    var _didIteratorError3 = false;
+    var _iteratorError3 = undefined;
 
     try {
-      for (var _iterator = rolledDices[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-        var elem = _step.value;
+      for (var _iterator3 = rolledDices[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+        var elem = _step3.value;
         var image = document.createElement('img');
         console.log(elem);
 
@@ -209,16 +414,16 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
         }
       }
     } catch (err) {
-      _didIteratorError = true;
-      _iteratorError = err;
+      _didIteratorError3 = true;
+      _iteratorError3 = err;
     } finally {
       try {
-        if (!_iteratorNormalCompletion && _iterator["return"] != null) {
-          _iterator["return"]();
+        if (!_iteratorNormalCompletion3 && _iterator3["return"] != null) {
+          _iterator3["return"]();
         }
       } finally {
-        if (_didIteratorError) {
-          throw _iteratorError;
+        if (_didIteratorError3) {
+          throw _iteratorError3;
         }
       }
     }
@@ -228,77 +433,75 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
     var children = _toConsumableArray(container.childNodes);
 
     console.log(children);
-    var _iteratorNormalCompletion2 = true;
-    var _didIteratorError2 = false;
-    var _iteratorError2 = undefined;
+    var _iteratorNormalCompletion4 = true;
+    var _didIteratorError4 = false;
+    var _iteratorError4 = undefined;
 
     try {
-      for (var _iterator2 = children[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-        var child = _step2.value;
+      for (var _iterator4 = children[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+        var child = _step4.value;
         if (child.tagName == 'H2') continue;
         container.removeChild(child);
         console.log(container);
       }
     } catch (err) {
-      _didIteratorError2 = true;
-      _iteratorError2 = err;
+      _didIteratorError4 = true;
+      _iteratorError4 = err;
     } finally {
       try {
-        if (!_iteratorNormalCompletion2 && _iterator2["return"] != null) {
-          _iterator2["return"]();
+        if (!_iteratorNormalCompletion4 && _iterator4["return"] != null) {
+          _iterator4["return"]();
         }
       } finally {
-        if (_didIteratorError2) {
-          throw _iteratorError2;
+        if (_didIteratorError4) {
+          throw _iteratorError4;
+        }
+      }
+    }
+  }
+
+  function rollTheDices() {
+    var container = _toConsumableArray(document.getElementsByClassName('dices'));
+
+    var _iteratorNormalCompletion5 = true;
+    var _didIteratorError5 = false;
+    var _iteratorError5 = undefined;
+
+    try {
+      var _loop2 = function _loop2() {
+        var elem = _step5.value;
+        elem.addEventListener('click', function () {
+          event.preventDefault();
+          var dices = rollTheDicesArray();
+          clearDiceContainer(elem);
+          drawRolledDices(dices);
+        });
+      };
+
+      for (var _iterator5 = container[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+        _loop2();
+      }
+    } catch (err) {
+      _didIteratorError5 = true;
+      _iteratorError5 = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion5 && _iterator5["return"] != null) {
+          _iterator5["return"]();
+        }
+      } finally {
+        if (_didIteratorError5) {
+          throw _iteratorError5;
         }
       }
     }
   }
 
   fillTheBoard();
-
-  var checkers = _toConsumableArray(document.getElementsByClassName('checker'));
-
-  console.log(checkers[0].parentNode);
-  var dices = rollTheDices();
-  console.log(dices);
-  drawRolledDices(dices);
-
-  var container = _toConsumableArray(document.getElementsByClassName('dices'));
-
-  console.log(container);
-  var _iteratorNormalCompletion3 = true;
-  var _didIteratorError3 = false;
-  var _iteratorError3 = undefined;
-
-  try {
-    var _loop = function _loop() {
-      var elem = _step3.value;
-      elem.addEventListener('click', function () {
-        event.preventDefault();
-        dices = rollTheDices();
-        clearDiceContainer(elem);
-        drawRolledDices(dices);
-      });
-    };
-
-    for (var _iterator3 = container[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-      _loop();
-    }
-  } catch (err) {
-    _didIteratorError3 = true;
-    _iteratorError3 = err;
-  } finally {
-    try {
-      if (!_iteratorNormalCompletion3 && _iterator3["return"] != null) {
-        _iterator3["return"]();
-      }
-    } finally {
-      if (_didIteratorError3) {
-        throw _iteratorError3;
-      }
-    }
-  }
+  socket.emit('fill');
+  drawRolledDices(rollTheDicesArray());
+  rollTheDices();
+  showAvailableMoves(dicesObj);
 });
 
 /***/ })

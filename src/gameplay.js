@@ -1,6 +1,11 @@
+var socket = io.connect();
 const pointsTop = [...document.getElementById('points_top').children];
 const pointsBottom = [...document.getElementById('points_bottom').children].reverse();
 const points = pointsBottom.concat(pointsTop);
+const dicesObj = {
+    first: 0,
+    second: 0
+}
 
 function insertChecker(checkerClassName){
     let checker = document.createElement('div');
@@ -25,20 +30,133 @@ function fillTheBoard(){
     }
 }
 
-function showAvMovesDatabase(from, dice_1, dice_2){
-
-    if(con.query("CALL IS_POINT_FREE(?, ?)", [from, dice_1], ()=>{}));
-    //highlight
-    if(con.query("CALL IS_POINT_FREE(?, ?)", [from, dice_2], ()=>{}));
-    //highlight
-    if(con.query("CALL IS_MULTIPOINT_FREE(?, ?)", [from, dice_1 + dice_2], ()=>{}));
-    //highlight
+function parsePointsId(pointId){
+    switch(pointId){
+        case 'one':
+            return 1;
+        case 'two':
+            return 2;
+        case 'three':
+            return 3;
+        case 'four':
+            return 4;
+        case 'five':
+            return 5;
+        case 'six':
+            return 6;
+        case 'seven':
+            return 7;
+        case 'eight':
+            return 8;
+        case 'nine':
+            return 9;
+        case 'ten':
+            return 10;
+        case 'eleven':
+            return 11;
+        case 'twelve':
+            return 12;
+        case 'thirteen':
+            return 13;
+        case 'fourteen':
+            return 14;
+        case 'fifteen':
+            return 15;
+        case 'sixteen':
+            return 16;
+        case 'seventeen':
+            return 17;
+        case 'eightteen':
+            return 18;
+        case 'nineteen':
+            return 19;
+        case 'twenty':
+            return 20;
+        case 'twentyone':
+            return 21;
+        case 'twentytwo':
+            return 22;
+        case 'twentythree':
+            return 23;
+        case 'twentyfour':
+            return 24;
+    }
 }
 
-function showAvailableMoves(node, rolledDices){
-    node.addEventListener('click', () =>{
-        showAvMovesDatabase(node.parentNode, rolledDices[0], rolledDices[1])
+function highlightMoves(pointNumber){
+    console.log('point number:', pointNumber);
+    points[pointNumber - 1].append(insertChecker('checker-move'));
+}
+
+function parseCheckAnswer(answ, dice_1, dice_2){
+    switch(answ){
+        case 'd1no':
+            break;
+        case 'd1yes':
+            highlightMoves(dice_1);
+            break;
+        case 'd2no':
+            break;
+        case 'd2yes':
+            highlightMoves(dice_2);
+            break;
+        case 'd3no':
+            break;
+        case 'd3yes':
+            highlightMoves(dice_1 + dice_2);
+            break;
+    }
+}
+
+function showAvMovesDatabase(from, dicesObj){
+    from = parsePointsId(from);
+    console.log(from);
+    socket.emit('check_points', {
+        from: from,
+        dice_1: dicesObj.first,
+        dice_2: dicesObj.second
+    });
+    socket.on('check_answer', data =>{
+        parseCheckAnswer(data, from + dicesObj.first, from + dicesObj.second);
     })
+}
+
+function getOpenCheckers(){
+    console.log(points)
+    let checkers = [];
+    for(let elem of points){
+        if(elem.className == 'points-bottom' && elem.childElementCount != 0){
+            checkers.push(elem.firstChild);
+        }
+        if(elem.className == 'points-top' && elem.childElementCount != 0){
+            checkers.push(elem.lastChild);
+        }
+    }
+    return checkers;
+}
+
+function showAvailableMoves(rolledDices){
+    let checkers = getOpenCheckers();
+    console.log('open checkers: ', checkers);
+    for(let elem of checkers){
+        elem.addEventListener('mouseover', ()=>{
+            event.preventDefault();
+            elem.className += ' checker-hover'
+        })
+        elem.addEventListener('mouseout', ()=>{
+            event.preventDefault();
+            elem.className = elem.className.replace(/\bchecker-hover\b/ig, '');
+        })
+        elem.addEventListener('click', ()=>{
+            event.preventDefault();
+            if(elem.className.match(/\bchecker-clicked\b/ig)){
+                elem.className = elem.className.replace(/\bchecker-clicked\b/ig, '');
+                return;
+            }
+            elem.className += ' checker-clicked'
+            showAvMovesDatabase(elem.parentNode.id, rolledDices);
+        })
+    }
 }
 
 function randNumber(){
@@ -46,8 +164,14 @@ function randNumber(){
     return Math.floor(rand);
 }
 
-function rollTheDices(){
-    let dices = [randNumber(), randNumber()];
+function rollTheDicesArray(){
+    for(let key in dicesObj){
+        if(dicesObj.hasOwnProperty(key)){
+            dicesObj[key] = randNumber();
+        }
+    }
+    let dices = [dicesObj.first, dicesObj.second];
+    console.log(dicesObj);
     return dices;
 }
 
@@ -86,7 +210,6 @@ function drawRolledDices(rolledDices){
     }
 }
 
-
 function clearDiceContainer(container){
     let children = [...container.childNodes];
     console.log(children);
@@ -98,21 +221,20 @@ function clearDiceContainer(container){
     }
 }
 
-fillTheBoard();
-let checkers = [...document.getElementsByClassName('checker')];
-console.log(checkers[0].parentNode);
-let dices = rollTheDices();
-console.log(dices);
-drawRolledDices(dices);
-
-let container = [...document.getElementsByClassName('dices')];
-console.log(container);
-for(let elem of container){
-    elem.addEventListener('click', ()=>{
-        event.preventDefault();
-        dices = rollTheDices();
-        clearDiceContainer(elem);
-        drawRolledDices(dices);
-    })
+function rollTheDices(){
+    let container = [...document.getElementsByClassName('dices')];
+    for(let elem of container){
+        elem.addEventListener('click', ()=>{
+            event.preventDefault();
+            let dices = rollTheDicesArray();
+            clearDiceContainer(elem);
+            drawRolledDices(dices);
+        })
+    }
 }
 
+fillTheBoard();
+socket.emit('fill');
+drawRolledDices(rollTheDicesArray());
+rollTheDices();
+showAvailableMoves(dicesObj);
