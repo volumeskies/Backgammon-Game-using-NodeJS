@@ -61,21 +61,53 @@ io.use(function (socket, next) {
 	sessionMid(socket.request, socket.request.res, next);
 });
 
+const user = {
+	login: '',
+	color: ''
+}
+
+const room = {
+	id: 0,
+	sockets: []
+}
+
 io.sockets.on('connection', function(socket){
 	console.log("server connection");
 	console.log(socket.request.session.id);
+
+	/* SIGN UP */
 	socket.on('user_signup', data =>{
 		console.log('user signup server');
-		con.query('CALL REGISTER(?, ?, ?)', [data.username, data.login, data.password], function (error, result) {
-			if (error) throw error;
-			var res = JSON.parse(JSON.stringify(result[0]));
-			if(res[0].FALSE)
-				console.log('SIGN UP DENIED');//notification this login has already taken
-			else if(res[0].TRUE)
-				console.log('SUCCESSFUL SIGN UP'); // !SUCCESSFUL signup!
-		  });
+		function register(data, callback){
+			con.query('CALL REGISTER(?, ?, ?)', [data.username, data.login, data.password], function (error, result) {
+				if (error) throw error;
+				var res = JSON.parse(JSON.stringify(result[0]));
+				if(res[0].FALSE){
+					console.log('SIGN UP DENIED');//notification this login has already taken
+					callback(false);
+				}
+				else if(res[0].TRUE){
+					console.log('SUCCESSFUL SIGN UP'); // !SUCCESSFUL signup!
+					callback(true);
+				}
+			  });
+		}
+		
+		register(data, (val)=>{
+			if(!val){
+				io.emit('user_signup_notification', {val: false});
+			}
+			else{
+				user.login = data.login;
+				console.log(user.login);
+				io.emit('user_signup_notification', {val: true});
+				io.emit('redirect', '/invite');
+			} 
+		})
+
 	});
 	
+	/* SIGN IN */
 	socket.on('user_signin', data=>{
 		console.log('user signin server');
 		console.log(io.id);
@@ -93,16 +125,21 @@ io.sockets.on('connection', function(socket){
 				}
 			  });
 		}
+
 		login(data, (val)=>{
-			if(!val)
-				  io.emit('user_signin_notification', {val: false});
+			if(!val){
+				io.emit('user_signin_notification', {val: false});
+			}
 			else{
+				user.login = data.login;
+				console.log(user.login);
 				io.emit('user_signin_notification', {val: true});
 				io.emit('redirect', '/invite');
 			} 
 		});
 	});
 
+	/* CHECK POINTS */
 	socket.on('check_points', data =>{
 		console.log(data);
 		function checkPoints(data, callback){
@@ -148,5 +185,9 @@ io.sockets.on('connection', function(socket){
 			io.emit('check_answer', val);
 		});
     	
+	})
+
+	/* INVITE */
+	socket.on('invite', data=>{
 	})
 });

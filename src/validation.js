@@ -46,7 +46,7 @@ export class Validation {
         this.confirmPasswordValidation(password_, confirm_);
         this.resetFields();
         this.highlightFields();
-        return (this.login && this.password && this.username && this.confirm);
+        return (this.login && this.password && this.username && this.confirm_password);
     }
 
     loginValidation(login_){

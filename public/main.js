@@ -205,8 +205,19 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
     console.log('dsds');
     if (data.val == false) _notifications.Notify.error('Неверно введён логин или пароль!');else if (data.val == true) _notifications.Notify.success('Успешно!');
   });
+  socket.on('user_signup_notification', function (data) {
+    console.log('dsds');
+    if (data.val == false) _notifications.Notify.error('Ошибка!');else if (data.val == true) _notifications.Notify.success('Успешно!');
+  });
   socket.on('redirect', function (url) {
     window.location.href = url;
+  });
+  $('.invite__button').on('click', function (event) {
+    event.preventDefault();
+    var inviteLogin = $('input[name=login]').val();
+    socket.emit('invite', {
+      login: inviteLogin
+    });
   });
 });
 
@@ -307,7 +318,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
         this.confirmPasswordValidation(password_, confirm_);
         this.resetFields();
         this.highlightFields();
-        return this.login && this.password && this.username && this.confirm;
+        return this.login && this.password && this.username && this.confirm_password;
       }
     }, {
       key: "loginValidation",

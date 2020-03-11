@@ -27,7 +27,7 @@ $('.signup__button').on('click', event =>{
                 password: userPassword,
                 correct_password: userPasswordConfirm,
                });
-        })
+        });
 
 socket.on('user_signin_notification', data => {
         console.log('dsds');
@@ -37,6 +37,22 @@ socket.on('user_signin_notification', data => {
             Notify.success('Успешно!');
 });
 
+socket.on('user_signup_notification', data => {
+        console.log('dsds');
+        if(data.val == false)
+            Notify.error('Ошибка!');
+        else if(data.val == true)
+            Notify.success('Успешно!');
+});
+
 socket.on('redirect', url =>{
         window.location.href = url;
 });
+
+$('.invite__button').on('click', event =>{
+        event.preventDefault();
+        let inviteLogin = $('input[name=login]').val();
+        socket.emit('invite',{
+                login: inviteLogin
+        })
+})
