@@ -53,7 +53,7 @@ app.post("/signin", urlencodedParser, (req, res)=>{
 	return res.redirect('/');
 });
 
-app.use(express.static('../public'));
+app.use(express.static(__dirname));
 
 /* SERVER LISTENING */
 const port = process.env.PORT || 8081;
