@@ -29,7 +29,7 @@ var sessionMid = session({
 app.use(sessionMid);
 
 app.get("/", urlencodedParser, (req, res)=>{
-	const index = path.join(__dirname, 'public', 'signin.html');
+	const index = path.join(__dirname, '../public', 'signin.html');
     res.sendFile(index);
 });
 
