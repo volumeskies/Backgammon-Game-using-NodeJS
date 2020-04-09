@@ -27,7 +27,8 @@ var sessionMid = session({
 app.use(sessionMid);
 
 app.get("/", urlencodedParser, (req, res)=>{
-    res.sendFile('signin.html', { root: '../public/'});
+	const index = path.join(__dirname, 'public', 'signin.html');
+    res.sendFile(index);
 });
 
 app.get("/signup", urlencodedParser, (req, res)=>{
