@@ -18,6 +18,7 @@ const con = db.createConnection({
 
 con.connect(()=>{
 	console.log("mysql connected");
+	console.log('current directory: ', __dirname);
 });
 
 /* APP */
