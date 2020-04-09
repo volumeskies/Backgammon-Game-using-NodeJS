@@ -1,9 +1,10 @@
-import express from 'express';
-import bodyParser from 'body-parser';
-import session from 'express-session';
+const express = require('express');
+const bodyParser = require('body-parser');
+const session = require('express-session');
 const app = express();
-import db from 'mysql';
-import socket from 'socket.io';
+const db = require('mysql');
+const socket = require('socket.io');
+const process = require('process');
 const urlencodedParser = bodyParser.urlencoded({extended: false});
 //const store = new session.MemoryStore;
 /* MYSQL CONNECTION*/
@@ -52,7 +53,7 @@ app.post("/signin", urlencodedParser, (req, res)=>{
 app.use(express.static('../public'));
 
 /* SERVER LISTENING */
-const port = procces.env.PORT || 8081;
+const port = process.env.PORT || 8081;
 const server = app.listen(port);
 
 /* SOCKET.IO */
