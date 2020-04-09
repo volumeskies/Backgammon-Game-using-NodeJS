@@ -85,334 +85,278 @@
 /******/ })
 /************************************************************************/
 /******/ ([
-/* 0 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
-  if (true) {
-    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [exports], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
-				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
-				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
-				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-  } else { var mod; }
-})(typeof globalThis !== "undefined" ? globalThis : typeof self !== "undefined" ? self : this, function (_exports) {
-  "use strict";
-
-  Object.defineProperty(_exports, "__esModule", {
-    value: true
-  });
-  _exports.Notify = _exports.Notifications = void 0;
-
-  function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
-
-  function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-
-  function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(n); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
-  function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
-
-  function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
-
-  function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
-  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-  function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-  function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
-  var Notifications = /*#__PURE__*/function () {
-    function Notifications() {
-      _classCallCheck(this, Notifications);
-    }
-
-    _createClass(Notifications, [{
-      key: "error",
-      value: function error(message_) {
-        var popup = document.createElement('div');
-        popup.className = 'popup__error';
-        popup.innerHTML = "<span>".concat(message_, "</span>");
-
-        var container = _toConsumableArray(document.getElementsByClassName('notifications'));
-
-        container[0].appendChild(popup);
-        setTimeout(function () {
-          popup.remove();
-        }, 7000);
-      }
-    }, {
-      key: "success",
-      value: function success(message_) {
-        console.log(message_);
-        var popup = document.createElement('div');
-        popup.className = 'popup__success';
-        popup.innerHTML = "<span>".concat(message_, "</span>");
-
-        var container = _toConsumableArray(document.getElementsByClassName('notifications'));
-
-        container[0].appendChild(popup);
-        setTimeout(function () {
-          popup.remove();
-        }, 7000);
-      }
-    }]);
-
-    return Notifications;
-  }();
-
-  _exports.Notifications = Notifications;
-  var Notify = new Notifications();
-  _exports.Notify = Notify;
-});
-
-/***/ }),
+/* 0 */,
 /* 1 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
-  if (true) {
-    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(2), __webpack_require__(0)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
-				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
-				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
-				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-  } else { var mod; }
-})(typeof globalThis !== "undefined" ? globalThis : typeof self !== "undefined" ? self : this, function (_validation, _notifications) {
-  "use strict";
+"use strict";
+// ESM COMPAT FLAG
+__webpack_require__.r(__webpack_exports__);
 
-  var socket = io.connect();
-  $('.signin__button').on('click', function (event) {
-    event.preventDefault();
-    var userLogin = $('input[name=login]').val();
-    var userPassword = $('input[name=password]').val();
-    if (!_validation.validate.validation(userLogin, userPassword)) return;
-    socket.emit('user_signin', {
-      login: userLogin,
-      password: userPassword
-    });
-  }); //отправляем данные с "Зарегистрироваться" на сервер
+// CONCATENATED MODULE: ./src/notifications.js
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
 
-  $('.signup__button').on('click', function (event) {
-    event.preventDefault();
-    var userLogin = $('input[name=login]').val();
-    var userPassword = $('input[name=password]').val();
-    var userPasswordConfirm = $('input[name=password_correct]').val();
-    var userName = $('input[name=name]').val();
-    if (!_validation.validate.registerValidation(userLogin, userPassword, userPasswordConfirm, userName)) return;
-    socket.emit('user_signup', {
-      username: userName,
-      login: userLogin,
-      password: userPassword,
-      correct_password: userPasswordConfirm
-    });
-  });
-  socket.on('user_signin_notification', function (data) {
-    console.log('dsds');
-    if (data.val == false) _notifications.Notify.error('Неверно введён логин или пароль!');else if (data.val == true) _notifications.Notify.success('Успешно!');
-  });
-  socket.on('user_signup_notification', function (data) {
-    console.log('dsds');
-    if (data.val == false) _notifications.Notify.error('Ошибка!');else if (data.val == true) _notifications.Notify.success('Успешно!');
-  });
-  socket.on('redirect', function (url) {
-    window.location.href = url;
-  });
-  $('.invite__button').on('click', function (event) {
-    event.preventDefault();
-    var inviteLogin = $('input[name=login]').val();
-    socket.emit('invite', {
-      login: inviteLogin
-    });
-  });
-});
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 
-/***/ }),
-/* 2 */
-/***/ (function(module, exports, __webpack_require__) {
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(n); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
-var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
-  if (true) {
-    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [exports, __webpack_require__(0)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
-				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
-				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
-				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-  } else { var mod; }
-})(typeof globalThis !== "undefined" ? globalThis : typeof self !== "undefined" ? self : this, function (_exports, _notifications) {
-  "use strict";
+function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
 
-  Object.defineProperty(_exports, "__esModule", {
-    value: true
-  });
-  _exports.validate = _exports.Validation = void 0;
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
 
-  function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
-  function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-  function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(n); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
-  function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-  function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
+var Notifications = /*#__PURE__*/function () {
+  function Notifications() {
+    _classCallCheck(this, Notifications);
+  }
 
-  function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+  _createClass(Notifications, [{
+    key: "error",
+    value: function error(message_) {
+      var popup = document.createElement('div');
+      popup.className = 'popup__error';
+      popup.innerHTML = "<span>".concat(message_, "</span>");
 
-  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+      var container = _toConsumableArray(document.getElementsByClassName('notifications'));
 
-  function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+      container[0].appendChild(popup);
+      setTimeout(function () {
+        popup.remove();
+      }, 7000);
+    }
+  }, {
+    key: "success",
+    value: function success(message_) {
+      console.log(message_);
+      var popup = document.createElement('div');
+      popup.className = 'popup__success';
+      popup.innerHTML = "<span>".concat(message_, "</span>");
 
-  function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+      var container = _toConsumableArray(document.getElementsByClassName('notifications'));
 
-  var Validation = /*#__PURE__*/function () {
-    function Validation() {
-      _classCallCheck(this, Validation);
+      container[0].appendChild(popup);
+      setTimeout(function () {
+        popup.remove();
+      }, 7000);
+    }
+  }]);
+
+  return Notifications;
+}();
+var Notify = new Notifications();
+// CONCATENATED MODULE: ./src/validation.js
+function validation_toConsumableArray(arr) { return validation_arrayWithoutHoles(arr) || validation_iterableToArray(arr) || validation_unsupportedIterableToArray(arr) || validation_nonIterableSpread(); }
+
+function validation_nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+function validation_unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return validation_arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(n); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return validation_arrayLikeToArray(o, minLen); }
+
+function validation_iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
+
+function validation_arrayWithoutHoles(arr) { if (Array.isArray(arr)) return validation_arrayLikeToArray(arr); }
+
+function validation_arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+function validation_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function validation_defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function validation_createClass(Constructor, protoProps, staticProps) { if (protoProps) validation_defineProperties(Constructor.prototype, protoProps); if (staticProps) validation_defineProperties(Constructor, staticProps); return Constructor; }
+
+
+var validation_Validation = /*#__PURE__*/function () {
+  function Validation() {
+    validation_classCallCheck(this, Validation);
+
+    this.login = true;
+    this.password = true;
+    this.confirm_password = true;
+    this.username = true;
+  }
+
+  validation_createClass(Validation, [{
+    key: "resetFields",
+    value: function resetFields() {
+      var fields = validation_toConsumableArray(document.getElementsByTagName('input'));
+
+      fields.forEach(function (elem) {
+        elem.style.border = 0;
+      });
+    }
+  }, {
+    key: "highlightFields",
+    value: function highlightFields() {
+      if (!this.login) {
+        var field = validation_toConsumableArray(document.getElementsByName('login'));
+
+        field[0].style.border = '2px solid rgb(228, 143, 152)';
+      }
+
+      if (!this.password) {
+        var _field = validation_toConsumableArray(document.getElementsByName('password'));
+
+        _field[0].style.border = '2px solid rgb(228, 143, 152)';
+      }
+
+      if (!this.confirm_password) {
+        var _field2 = validation_toConsumableArray(document.getElementsByName('password_correct'));
+
+        _field2[0].style.border = '2px solid rgb(228, 143, 152)';
+      }
+
+      if (!this.username) {
+        var _field3 = validation_toConsumableArray(document.getElementsByName('name'));
+
+        _field3[0].style.border = '2px solid rgb(228, 143, 152)';
+      }
+    }
+  }, {
+    key: "validation",
+    value: function validation(login_, password_) {
+      this.loginValidation(login_);
+      this.passwordValidation(password_);
+      this.resetFields();
+      this.highlightFields();
+      return this.login && this.password;
+    }
+  }, {
+    key: "registerValidation",
+    value: function registerValidation(login_, password_, confirm_, username_) {
+      this.loginValidation(login_);
+      this.passwordValidation(password_);
+      this.userNameValidation(username_);
+      this.confirmPasswordValidation(password_, confirm_);
+      this.resetFields();
+      this.highlightFields();
+      return this.login && this.password && this.username && this.confirm_password;
+    }
+  }, {
+    key: "loginValidation",
+    value: function loginValidation(login_) {
+      if (login_.length > 255) {
+        Notify.error('Слишком длинный логин!');
+        this.login = false;
+        return;
+      }
+
+      if (login_ === '') {
+        Notify.error('Введите логин!');
+        this.login = false;
+        return;
+      }
 
       this.login = true;
+    }
+  }, {
+    key: "passwordValidation",
+    value: function passwordValidation(password_) {
+      if (password_.length > 255) {
+        Notify.error('Слишком длинный пароль!');
+        this.password = false;
+        return;
+      }
+
+      if (password_ === '') {
+        Notify.error('Введите пароль!');
+        this.password = false;
+        return;
+      }
+
       this.password = true;
-      this.confirm_password = true;
+    }
+  }, {
+    key: "userNameValidation",
+    value: function userNameValidation(username_) {
+      if (username_.length > 255) {
+        Notify.error('Слишком длинное имя пользователя!');
+        this.username = false;
+        return;
+      }
+
+      if (username_ === '') {
+        Notify.error('Введите имя пользователя!');
+        this.username = false;
+        return;
+      }
+
       this.username = true;
     }
-
-    _createClass(Validation, [{
-      key: "resetFields",
-      value: function resetFields() {
-        var fields = _toConsumableArray(document.getElementsByTagName('input'));
-
-        fields.forEach(function (elem) {
-          elem.style.border = 0;
-        });
+  }, {
+    key: "confirmPasswordValidation",
+    value: function confirmPasswordValidation(password_, confirm_) {
+      if (confirm_ === '') {
+        Notify.error('Подтвердите пароль!');
+        this.confirm = false;
+        return;
       }
-    }, {
-      key: "highlightFields",
-      value: function highlightFields() {
-        if (!this.login) {
-          var field = _toConsumableArray(document.getElementsByName('login'));
 
-          field[0].style.border = '2px solid rgb(228, 143, 152)';
-        }
-
-        if (!this.password) {
-          var _field = _toConsumableArray(document.getElementsByName('password'));
-
-          _field[0].style.border = '2px solid rgb(228, 143, 152)';
-        }
-
-        if (!this.confirm_password) {
-          var _field2 = _toConsumableArray(document.getElementsByName('password_correct'));
-
-          _field2[0].style.border = '2px solid rgb(228, 143, 152)';
-        }
-
-        if (!this.username) {
-          var _field3 = _toConsumableArray(document.getElementsByName('name'));
-
-          _field3[0].style.border = '2px solid rgb(228, 143, 152)';
-        }
+      if (password_ !== confirm_) {
+        Notify.error('Пароли не совпадают!');
+        this.confirm = false;
+        return;
       }
-    }, {
-      key: "validation",
-      value: function validation(login_, password_) {
-        this.loginValidation(login_);
-        this.passwordValidation(password_);
-        this.resetFields();
-        this.highlightFields();
-        return this.login && this.password;
-      }
-    }, {
-      key: "registerValidation",
-      value: function registerValidation(login_, password_, confirm_, username_) {
-        this.loginValidation(login_);
-        this.passwordValidation(password_);
-        this.userNameValidation(username_);
-        this.confirmPasswordValidation(password_, confirm_);
-        this.resetFields();
-        this.highlightFields();
-        return this.login && this.password && this.username && this.confirm_password;
-      }
-    }, {
-      key: "loginValidation",
-      value: function loginValidation(login_) {
-        if (login_.length > 255) {
-          _notifications.Notify.error('Слишком длинный логин!');
 
-          this.login = false;
-          return;
-        }
+      this.password = true;
+      this.confirm_password = true;
+    }
+  }]);
 
-        if (login_ === '') {
-          _notifications.Notify.error('Введите логин!');
+  return Validation;
+}();
+var validate = new validation_Validation();
+// CONCATENATED MODULE: ./src/client.js
 
-          this.login = false;
-          return;
-        }
 
-        this.login = true;
-      }
-    }, {
-      key: "passwordValidation",
-      value: function passwordValidation(password_) {
-        if (password_.length > 255) {
-          _notifications.Notify.error('Слишком длинный пароль!');
+var socket = io.connect();
+$('.signin__button').on('click', function (event) {
+  event.preventDefault();
+  var userLogin = $('input[name=login]').val();
+  var userPassword = $('input[name=password]').val();
+  if (!validate.validation(userLogin, userPassword)) return;
+  socket.emit('user_signin', {
+    login: userLogin,
+    password: userPassword
+  });
+}); //отправляем данные с "Зарегистрироваться" на сервер
 
-          this.password = false;
-          return;
-        }
-
-        if (password_ === '') {
-          _notifications.Notify.error('Введите пароль!');
-
-          this.password = false;
-          return;
-        }
-
-        this.password = true;
-      }
-    }, {
-      key: "userNameValidation",
-      value: function userNameValidation(username_) {
-        if (username_.length > 255) {
-          _notifications.Notify.error('Слишком длинное имя пользователя!');
-
-          this.username = false;
-          return;
-        }
-
-        if (username_ === '') {
-          _notifications.Notify.error('Введите имя пользователя!');
-
-          this.username = false;
-          return;
-        }
-
-        this.username = true;
-      }
-    }, {
-      key: "confirmPasswordValidation",
-      value: function confirmPasswordValidation(password_, confirm_) {
-        if (confirm_ === '') {
-          _notifications.Notify.error('Подтвердите пароль!');
-
-          this.confirm = false;
-          return;
-        }
-
-        if (password_ !== confirm_) {
-          _notifications.Notify.error('Пароли не совпадают!');
-
-          this.confirm = false;
-          return;
-        }
-
-        this.password = true;
-        this.confirm_password = true;
-      }
-    }]);
-
-    return Validation;
-  }();
-
-  _exports.Validation = Validation;
-  var validate = new Validation();
-  _exports.validate = validate;
+$('.signup__button').on('click', function (event) {
+  event.preventDefault();
+  var userLogin = $('input[name=login]').val();
+  var userPassword = $('input[name=password]').val();
+  var userPasswordConfirm = $('input[name=password_correct]').val();
+  var userName = $('input[name=name]').val();
+  if (!validate.registerValidation(userLogin, userPassword, userPasswordConfirm, userName)) return;
+  socket.emit('user_signup', {
+    username: userName,
+    login: userLogin,
+    password: userPassword,
+    correct_password: userPasswordConfirm
+  });
+});
+socket.on('user_signin_notification', function (data) {
+  console.log('dsds');
+  if (data.val == false) Notify.error('Неверно введён логин или пароль!');else if (data.val == true) Notify.success('Успешно!');
+});
+socket.on('user_signup_notification', function (data) {
+  console.log('dsds');
+  if (data.val == false) Notify.error('Ошибка!');else if (data.val == true) Notify.success('Успешно!');
+});
+socket.on('redirect', function (url) {
+  window.location.href = url;
+});
+$('.invite__button').on('click', function (event) {
+  event.preventDefault();
+  var inviteLogin = $('input[name=login]').val();
+  socket.emit('invite', {
+    login: inviteLogin
+  });
 });
 
 /***/ })

@@ -9,9 +9,9 @@ const urlencodedParser = bodyParser.urlencoded({extended: false});
 /* MYSQL CONNECTION*/
 const con = db.createConnection({
 	host: 'localhost',
-	user: 'root',
-	password: '',
-	database: 'backgammon'
+	user: 'host700505_3756',
+	password: '3370',
+	database: 'host700505_3756'
 });
 
 con.connect(()=>{
@@ -52,7 +52,8 @@ app.post("/signin", urlencodedParser, (req, res)=>{
 app.use(express.static('../public'));
 
 /* SERVER LISTENING */
-const server = app.listen(8081);
+const port = procces.env.PORT || 8081;
+const server = app.listen(port);
 
 /* SOCKET.IO */
 const io = socket(server);
