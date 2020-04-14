@@ -7,19 +7,19 @@ const db = require('mysql');
 const socket = require('socket.io');
 const process = require('process');
 const urlencodedParser = bodyParser.urlencoded({extended: false});
-//const store = new session.MemoryStore;
 /* MYSQL CONNECTION*/
 const con = db.createConnection({
-	host: 'localhost',
-	user: 'host700505_3756',
+	host: 'a0428363.xsph.ru',
+	port: 3306,
+	user: 'a0428363_3756',
 	password: '3370',
-	database: 'host700505_3756'
+	database: 'a0428363_backgammon',
 });
 
-con.connect(()=>{
-	console.log("mysql connected");
-	console.log('current directory: ', __dirname);
-});
+con.connect(function(err){
+	console.log('mysql connected');
+	if(err) throw err;
+})
 
 /* APP */
 var sessionMid = session({
@@ -34,15 +34,18 @@ app.get("/", urlencodedParser, (req, res)=>{
 });
 
 app.get("/signup", urlencodedParser, (req, res)=>{
-    res.sendFile('signup.html', { root: '../public/'});
+    const index = path.join(__dirname, '../public', 'signup.html');
+    res.sendFile(index);
 });
 
 app.get("/invite", urlencodedParser, (req, res)=>{
-    res.sendFile('invite.html', { root: '../public/'});
+    const index = path.join(__dirname, '../public', 'invite.html');
+    res.sendFile(index);
 });
 
 app.get("/game", urlencodedParser, (req, res)=>{
-    res.sendFile('game.html', { root: '../public/'});
+    const index = path.join(__dirname, '../public', 'game.html');
+    res.sendFile(index);
 });
 
 app.post("/game", urlencodedParser, (req, res)=>{
@@ -84,7 +87,7 @@ io.sockets.on('connection', function(socket){
 	socket.on('user_signup', data =>{
 		console.log('user signup server');
 		function register(data, callback){
-			con.query('CALL REGISTER(?, ?, ?)', [data.username, data.login, data.password], function (error, result) {
+			con.query('CALL REGISTER (?, ?, ?)', [data.username, data.password, data.login], function (error, result) {
 				if (error) throw error;
 				var res = JSON.parse(JSON.stringify(result[0]));
 				if(res[0].FALSE){

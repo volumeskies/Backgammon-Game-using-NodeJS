@@ -108,10 +108,10 @@ END //
 DELIMITER //
 CREATE PROCEDURE CHECKWINNER(game_id int)
 winner: BEGIN
-    DECLARE player_1;
-    DECLARE player_2;
-    DECLARE color_1;
-    DECLARE color_2;
+    DECLARE player_1 INT;
+    DECLARE player_2 INT;
+    DECLARE color_1 VARCHAR(50);
+    DECLARE color_2 VARCHAR(50);
     SET player_1 = (SELECT MIN(id_player) FROM players WHERE id_game = game_id);
     SET player_2 = (SELECT MAX(id_player) FROM players WHERE id_game = game_id);
     SET color_1 = CALL GETCOLOR(player_1, game_id);
@@ -124,6 +124,7 @@ winner: BEGIN
         LEAVE winner;
     END IF;
         SELECT "FALSE";
+    END IF;
 END //
 
 DELIMITER //
