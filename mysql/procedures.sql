@@ -38,13 +38,12 @@ game: BEGIN
     INSERT INTO games(id_game) VALUES(NULL);
     SET g_id = (SELECT MAX(id_game) FROM Games);
     IF(RAND() > 0.5) THEN
-        INSERT INTO Players(id_player, id_user, id_game, color) VALUES(NULL, get_id(login_1), g_id, 'w');
-        INSERT INTO Players(id_player, id_user, id_game, color) VALUES(NULL, get_id(login_2), g_id, 'b');
+        INSERT INTO players(id_player, id_user, id_game, color) VALUES(NULL, get_id(login_1), g_id, 'w');
+        INSERT INTO players(id_player, id_user, id_game, color) VALUES(NULL, get_id(login_2), g_id, 'b');
     ELSE 
-        INSERT INTO Players(id_player, id_user, id_game, color) VALUES(NULL, get_id(login_2), g_id, 'w');
-        INSERT INTO Players(id_player, id_user, id_game, color) VALUES(NULL, get_id(login_1), g_id, 'b');
+        INSERT INTO players(id_player, id_user, id_game, color) VALUES(NULL, get_id(login_2), g_id, 'w');
+        INSERT INTO players(id_player, id_user, id_game, color) VALUES(NULL, get_id(login_1), g_id, 'b');
     END IF;
-
 END //
 
 DELIMITER //
@@ -54,8 +53,8 @@ setvalues: BEGIN
     DECLARE player_2 INT;
     DECLARE white INT;
     DECLARE black INT;
-    SET player_1 = (SELECT MIN(id_player) FROM Players WHERE id_game = game_id);
-    SET player_2 = (SELECT MAX(id_player) FROM Players WHERE id_game = game_id);
+    SET player_1 = (SELECT MIN(id_player) FROM players WHERE id_game = game_id);
+    SET player_2 = (SELECT MAX(id_player) FROM players WHERE id_game = game_id);
     IF(player_1 = player_2) THEN
         SELECT "ERROR! Same player!";
         LEAVE setvalues;
@@ -68,7 +67,7 @@ setvalues: BEGIN
         SELECT "ERROR! Game do not exist!";
         LEAVE setvalues;
     END IF;
-    IF((SELECT color FROM Players WHERE id_player = player_1) = 'w') THEN
+    IF((SELECT color FROM players WHERE id_player = player_1) = 'w') THEN
         SET white = player_1;
         SET black = player_2;
     ELSE
@@ -83,7 +82,7 @@ setvalues: BEGIN
         INSERT INTO points(id_player, point_number, checkers_count) VALUES (white, 8, 3);
         INSERT INTO points(id_player, point_number, checkers_count) VALUES (white, 18, 5);
         INSERT INTO points(id_player, point_number, checkers_count) VALUES (white, 24, 2);
-        SELECT id_player, id_game FROM Players WHERE id_player = get_id(login_1) AND id_game = g_id;
+        SELECT id_player, id_game, color FROM players WHERE id_player = get_id(login_1) AND id_game = g_id;
 END //
 
 DELIMITER //
@@ -91,11 +90,19 @@ CREATE PROCEDURE GAMESTATE(login_1 VARCHAR(50), login_2 VARCHAR(50))
 gamestate: BEGIN
     DECLARE player_1 INT DEFAULT get_player_id(get_id(login_1));
     DECLARE player_2 INT DEFAULT get_player_id(get_id(login_2));
-    IF((SELECT id_game FROM Players WHERE id_player = player_1) IS NULL OR (SELECT id_game FROM Players WHERE id_player = player_2) IS NULL) THEN
+    IF((SELECT id_game FROM players WHERE id_player = player_1) IS NULL OR (SELECT id_game FROM players WHERE id_player = player_2) IS NULL) THEN
         CALL CREATE_GAME(login_1, login_2);
         LEAVE gamestate;
     ELSE
         SELECT id_player, point_number, checkers_count FROM points WHERE id_player = player_1 OR id_player = player_2;
+    END IF;
+END //
+
+
+DELIMITER //
+CREATE PROCEDURE GETCOLOR(p_id int, game_id int)
+BEGIN
+    SELECT color FROM players WHERE id_game = game_id and id_player = p_id;
 END //
 
 DELIMITER //
@@ -105,14 +112,14 @@ winner: BEGIN
     DECLARE player_2;
     DECLARE color_1;
     DECLARE color_2;
-    SET player_1 = (SELECT MIN(id_player) FROM Players WHERE id_game = game_id);
-    SET player_2 = (SELECT MAX(id_player) FROM Players WHERE id_game = game_id);
-    SET color_1 = get_color(player_1, game_id);
-    SET color_2 = get_color(player_2, game_id);
-    IF(((SELECT COUNT(checkers_count) FROM Points WHERE id_player = player_1 AND point_number BETWEEN 19 AND 24) = 15) AND color_1 = 'b') THEN
+    SET player_1 = (SELECT MIN(id_player) FROM players WHERE id_game = game_id);
+    SET player_2 = (SELECT MAX(id_player) FROM players WHERE id_game = game_id);
+    SET color_1 = CALL GETCOLOR(player_1, game_id);
+    SET color_2 = CALL GETCOLOR(player_2, game_id);
+    IF(((SELECT COUNT(checkers_count) FROM points WHERE id_player = player_1 AND point_number BETWEEN 19 AND 24) = 15) AND color_1 = 'b') THEN
         SELECT player_1;
         LEAVE winner;
-    ELSE IF(((SELECT COUNT(checkers_count) FROM Points WHERE id_player = player_2 AND point_number BETWEEN 1 AND 6) = 15) AND color_1 = 'W') THEN
+    ELSE IF(((SELECT COUNT(checkers_count) FROM points WHERE id_player = player_2 AND point_number BETWEEN 1 AND 6) = 15) AND color_1 = 'W') THEN
         SELECT player_2;
         LEAVE winner;
     END IF;
@@ -120,35 +127,67 @@ winner: BEGIN
 END //
 
 DELIMITER //
-CREATE PROCEDURE FREE_POINTS(from_point int, dice_1 int, dice_2 int)
+CREATE PROCEDURE FREE_POINTS(login_ varchar(50), from_point int, dice_1 int, dice_2 int)
 free: BEGIN 
-	DECLARE i INT DEFAULT from_point + 1;
-    DECLARE p1 INT DEFAULT from_point + dice_1;
-    DECLARE p2 INT DEFAULT from_point + dice_2;
-    points: WHILE(i <= dice_1 + dice_2 + from_point) DO
+	DECLARE point_1 INT;
+    DECLARE point_2 INT;
+    DECLARE multipoint INT;
+    DECLARE player_id INT;
+    DECLARE game_id INT;
+    DECLARE i INT;
+    DECLARE k INT;
+    DECLARE color VARCHAR(50);
+    SET player_id = get_player_id(get_id(login_));
+    SET game_id = (SELECT id_game FROM players WHERE id_player = player_id);
+    SET color = get_color(player_id, game_id);
+    IF(color = 'white') THEN
+        SET point_1 = from_point - dice_1;
+        SET point_2 = from_point - dice_2;
+        SET multipoint = from_point - (dice_1 + dice_2);
+    ELSE IF(color = 'black') THEN
+            SET point_1 = from_point + dice_1;
+            SET point_2 = from_point + dice_2;
+            SET multipoint = from_point + dice_1 + dice_2;
+        END IF;
+    END IF;
+    IF(from_point > multipoint AND color = 'white') THEN
+        SET i = multipoint;
+        SET k = from_point;
+    ELSE
+        SELECT 'ERROR! WRONG MOVE WHITE';
+        LEAVE free;
+    END IF;
+    IF(from_point < multipoint AND color = 'black') THEN
+        SET i = from_point;
+        SET k = multipoint;
+    ELSE
+        SELECT 'ERROR! WRONG MOVE BLACK';
+        LEAVE free;
+    END IF;
+    points: WHILE(i < k) DO
         IF(!is_point_free(i))
         THEN LEAVE points;
-        SELECT "LEAVE";
+            SELECT "LEAVE";
         END IF;
         SET i = i + 1;
     END WHILE points;
     IF(!is_point_free(i)) THEN 
         SET i = NULL;
     END IF;
-    IF(!is_point_free(p1)) THEN
-        SET p1 = NULL;
+    IF(!is_point_free(point_1)) THEN
+        SET point_1 = NULL;
     END IF;
-    IF(!is_point_free(p2)) THEN
-        SET p2 = NULL;
+    IF(!is_point_free(point_2)) THEN
+        SET point_2 = NULL;
     END IF;
-    SELECT i, p1, p2;
+    SELECT i, point_1, point_2;
 END //
 
 DELIMITER //
 CREATE PROCEDURE MAKE_MOVE(login_ VARCHAR(50), psw VARCHAR(50), from_point int, to_point int)
 makemove: BEGIN
     DECLARE p_id INT DEFAULT get_player_id(get_id(login_));
-    DECLARE g_id INT DEFAULT (SELECT id_game FROM Players WHERE id_player = p_id);
+    DECLARE g_id INT DEFAULT (SELECT id_game FROM players WHERE id_player = p_id);
     IF(!check_password(login_, psw)) THEN
         SELECT "ERROR! User password is not correct";
         LEAVE makemove;
@@ -169,10 +208,10 @@ DELIMITER //
 CREATE PROCEDURE ROLL(login_ VARCHAR(50), psw VARCHAR(50))
 roll: BEGIN
     DECLARE p_id INT DEFAULT get_player_id(get_id(login_));
-    DECLARE g_id INT DEFAULT (SELECT id_game FROM Players WHERE id_player = p_id);
+    DECLARE g_id INT DEFAULT (SELECT id_game FROM players WHERE id_player = p_id);
     DECLARE dice_1 INT DEFAULT ((SELECT FLOOR(RAND() * 6)) + 1);
     DECLARE dice_2 INT DEFAULT ((SELECT FLOOR(RAND() * 6)) + 1);
-    DECLARE cnt INT DEFAULT(SELECT COUNT(*) FROM Moves WHERE id_player = p_id);
+    DECLARE cnt INT DEFAULT(SELECT COUNT(*) FROM moves WHERE id_player = p_id);
     IF(!check_password(login_, psw)) THEN
         SELECT "ERROR! User password is not correct";
         LEAVE roll;
@@ -184,12 +223,13 @@ roll: BEGIN
     IF(!turn(p_id)) THEN
         SELECT "ERROR! Not your turn!";
         LEAVE roll;
-    ELSE IF((SELECT rolled FROM Players WHERE id_player = p_id) = (cnt + 1)) THEN
+    ELSE IF((SELECT rolled FROM players WHERE id_player = p_id) = (cnt + 1)) THEN
         SELECT "ERROR! You can't roll twice!";
         LEAVE roll;
     END IF;
-    UPDATE Players SET d1 = dice_1, d2 = dice_2, rolled = cnt + 1 WHERE id_player = p_id;
-    SELECT d1, d2 FROM Players WHERE id_player = p_id;
+    UPDATE players SET d1 = dice_1, d2 = dice_2, rolled = cnt + 1 WHERE id_player = p_id;
+    SELECT d1, d2 FROM players WHERE id_player = p_id;
+    END IF;
 END //
 /*----------------------------INVITATION PROCESS----------------------------*/
 DELIMITER //
@@ -229,13 +269,13 @@ CREATE PROCEDURE INV_ANSWER(u_login VARCHAR(50), i_login VARCHAR(50))
 answ: BEGIN
     IF(!invitation_exist(u_login, i_login)) THEN
         SELECT "ERROR! Invitation do not exist!";
-        LEAVE confirm;
+        LEAVE answ;
     END IF;
     IF(invitation_answer(u_login, i_login)) THEN
         SELECT "TRUE";
-        LEAVE confirm;
+        LEAVE answ;
     ELSE
         SELECT "FALSE";
-        LEAVE confirm;
+        LEAVE answ;
     END IF;
 END //
