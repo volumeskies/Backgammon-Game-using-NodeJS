@@ -1,5 +1,6 @@
 import { validate } from '../src/validation.js';
 import { Notify } from './notifications.js';
+import { Confirm } from './confirm.js';
 var socket = io.connect();
 $('.signin__button').on('click', event =>{
         event.preventDefault();
@@ -49,10 +50,23 @@ socket.on('redirect', url =>{
         window.location.href = url;
 });
 
+socket.on('invitation', data=>{
+        console.log(data);
+        Confirm.render(data);
+        $('.confirm__accept-button').on('click', event=>{
+                event.preventDefault();
+                socket.emit('confirmation', {login_1: data['login_1'], login_2: data['login_2'], confirmation: true});
+        })
+        $('.confirm__decline-button').on('click', event=>{
+                event.preventDefault();
+                socket.emit('confirmation', {login_1: data['login_1'], login_2: data['login_2'], confirmation: false});
+        })
+})
+
 $('.invite__button').on('click', event =>{
         event.preventDefault();
         let inviteLogin = $('input[name=login]').val();
         socket.emit('invite',{
-                login: inviteLogin
+                login: inviteLogin,
         })
 })

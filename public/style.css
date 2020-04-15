@@ -19,6 +19,8 @@ body{
     width: 100%;
     height: 100vh;
     background: linear-gradient(45deg, rgba(223,129,129,0.6) 10%, rgba(241,205,162,0.6) 70%);
+    font-family: 'Open Sans';
+    font-weight: 300;
 }
 
 form{
@@ -214,4 +216,44 @@ input[type="password"]{
 .invite__button{
     border-radius: 10px;
     padding: 10px 35px;
+}
+
+.hide{
+    display: none;
+}
+
+.confirm{
+    position: absolute;
+    top: calc(45% - 200px/2);
+    left: calc(50% - 300px/2);
+    height: 200px;
+    width: 300px;
+}
+
+.modal{
+    text-align: center;
+    z-index: 1;
+    height: 200px;
+    width: 300px;
+    box-shadow: -2px -2px 35px -7px rgba(0,0,0,1);
+}
+
+.confirm span{
+    font-size: 18px;
+    margin: 15px 0;
+}
+
+.confirm__accept-button{
+    border-radius: 10px;
+    padding: 10px 35px;
+}
+
+.confirm__decline-button{
+    border-radius: 10px;
+    padding: 10px 35px;
+    background-color: rgb(194, 83, 94);
+}
+
+.confirm__decline-button:hover{
+    background-color: #721C24;
 }

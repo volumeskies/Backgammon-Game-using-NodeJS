@@ -311,7 +311,78 @@ var validation_Validation = /*#__PURE__*/function () {
   return Validation;
 }();
 var validate = new validation_Validation();
+// CONCATENATED MODULE: ./src/confirm.js
+function confirm_toConsumableArray(arr) { return confirm_arrayWithoutHoles(arr) || confirm_iterableToArray(arr) || confirm_unsupportedIterableToArray(arr) || confirm_nonIterableSpread(); }
+
+function confirm_nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+function confirm_unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return confirm_arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(n); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return confirm_arrayLikeToArray(o, minLen); }
+
+function confirm_iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
+
+function confirm_arrayWithoutHoles(arr) { if (Array.isArray(arr)) return confirm_arrayLikeToArray(arr); }
+
+function confirm_arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+function confirm_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function confirm_defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function confirm_createClass(Constructor, protoProps, staticProps) { if (protoProps) confirm_defineProperties(Constructor.prototype, protoProps); if (staticProps) confirm_defineProperties(Constructor, staticProps); return Constructor; }
+
+var ConfirmModal = /*#__PURE__*/function () {
+  function ConfirmModal() {
+    confirm_classCallCheck(this, ConfirmModal);
+
+    this.acceptButton = '';
+    this.declineButton = '';
+  }
+
+  confirm_createClass(ConfirmModal, [{
+    key: "render",
+    value: function render(data) {
+      var modal = document.createElement('div');
+      modal.className = 'elements modal';
+
+      var container = confirm_toConsumableArray(document.getElementsByClassName('confirm'));
+
+      container[0].className = container[0].className.replace(/\bhide\b/ig, '');
+      container[0].appendChild(modal);
+      modal.innerHTML = "<span>\u041F\u0440\u0438\u0433\u043B\u0430\u0448\u0435\u043D\u0438\u0435 \u0432 \u0438\u0433\u0440\u0443 \u043E\u0442: ".concat(data.login_1, "</span>");
+      var acceptButton = document.createElement('button');
+      acceptButton.className = 'confirm__accept-button';
+      acceptButton.textContent = 'Принять';
+      var declineButton = document.createElement('button');
+      declineButton.className = 'confirm__decline-button';
+      declineButton.textContent = 'Отклонить';
+      modal.appendChild(acceptButton);
+      modal.appendChild(declineButton);
+      this.acceptButton = acceptButton;
+      this.declineButton = declineButton;
+    }
+  }, {
+    key: "accept",
+    value: function accept(callback) {
+      acceptButton.addEventListener('click', function (event) {
+        event.preventDefault();
+        callback();
+      });
+    }
+  }, {
+    key: "decline",
+    value: function decline(callback) {
+      declineButton.addEventListener('click', function (event) {
+        event.preventDefault();
+        callback();
+      });
+    }
+  }]);
+
+  return ConfirmModal;
+}();
+var Confirm = new ConfirmModal();
 // CONCATENATED MODULE: ./src/client.js
+
 
 
 var socket = io.connect();
@@ -350,6 +421,26 @@ socket.on('user_signup_notification', function (data) {
 });
 socket.on('redirect', function (url) {
   window.location.href = url;
+});
+socket.on('invitation', function (data) {
+  console.log(data);
+  Confirm.render(data);
+  $('.confirm__accept-button').on('click', function (event) {
+    event.preventDefault();
+    socket.emit('confirmation', {
+      login_1: data['login_1'],
+      login_2: data['login_2'],
+      confirmation: true
+    });
+  });
+  $('.confirm__decline-button').on('click', function (event) {
+    event.preventDefault();
+    socket.emit('confirmation', {
+      login_1: data['login_1'],
+      login_2: data['login_2'],
+      confirmation: false
+    });
+  });
 });
 $('.invite__button').on('click', function (event) {
   event.preventDefault();

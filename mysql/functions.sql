@@ -35,20 +35,20 @@ END //
 
 DELIMITER //
 CREATE FUNCTION get_color(p_id int, game_id int)
-RETURNS VARCHAR(50)
+RETURNS VARCHAR(1)
 BEGIN
     RETURN(SELECT color FROM players WHERE id_game = game_id and id_player = p_id);
 END //
 
 DELIMITER //
-CREATE FUNCTION invitation_exist(u_login int, i_login int)
+CREATE FUNCTION invitation_exist(u_login VARCHAR(50), i_login VARCHAR(50))
 RETURNS BOOLEAN
 BEGIN
     RETURN EXISTS (SELECT 1 FROM invites WHERE id_inviting = get_id(u_login) AND id_invited = get_id(i_login));
 END //
 
 DELIMITER //
-CREATE FUNCTION invitation_answer(u_login int, i_login int)
+CREATE FUNCTION invitation_answer(u_login VARCHAR(50), i_login VARCHAR(50))
 RETURNS BOOLEAN
 BEGIN
     RETURN (SELECT confirm FROM invites WHERE id_inviting = get_id(u_login) AND id_invited = get_id(i_login));

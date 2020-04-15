@@ -141,24 +141,24 @@ free: BEGIN
     SET player_id = get_player_id(get_id(login_));
     SET game_id = (SELECT id_game FROM players WHERE id_player = player_id);
     SET color = get_color(player_id, game_id);
-    IF(color = 'white') THEN
+    IF(color = 'w') THEN
         SET point_1 = from_point - dice_1;
         SET point_2 = from_point - dice_2;
         SET multipoint = from_point - (dice_1 + dice_2);
-    ELSE IF(color = 'black') THEN
+    ELSE IF(color = 'b') THEN
             SET point_1 = from_point + dice_1;
             SET point_2 = from_point + dice_2;
             SET multipoint = from_point + dice_1 + dice_2;
         END IF;
     END IF;
-    IF(from_point > multipoint AND color = 'white') THEN
+    IF(from_point > multipoint AND color = 'w') THEN
         SET i = multipoint;
         SET k = from_point;
     ELSE
         SELECT 'ERROR! WRONG MOVE WHITE';
         LEAVE free;
     END IF;
-    IF(from_point < multipoint AND color = 'black') THEN
+    IF(from_point < multipoint AND color = 'b') THEN
         SET i = from_point;
         SET k = multipoint;
     ELSE
@@ -189,20 +189,32 @@ CREATE PROCEDURE MAKE_MOVE(login_ VARCHAR(50), psw VARCHAR(50), from_point int, 
 makemove: BEGIN
     DECLARE p_id INT DEFAULT get_player_id(get_id(login_));
     DECLARE g_id INT DEFAULT (SELECT id_game FROM players WHERE id_player = p_id);
+    DECLARE color VARCHAR(1) DEFAULT get_color(p_id, g_id);
+    DECLARE step INT;
+    DECLARE dice_1 INT DEFAULT (SELECT d1 FROM games WHERE game_id = g_id);
+    DECLARE dice_2 INT DEFAULT (SELECT d2 FROM games WHERE game_id = g_id);
     IF(!check_password(login_, psw)) THEN
-        SELECT "ERROR! User password is not correct";
+    /* wrong password */
+        SELECT "ERRONE";
         LEAVE makemove;
     END IF;
     IF(!game_exists(g_id)) THEN
-        SELECT "ERROR! Game do not exists!";
+    /* game do not exists */
+        SELECT "ERRTWO";
         LEAVE makemove;
     END IF;
     IF(!turn(p_id)) THEN
-        SELECT "ERROR! Not your turn!";
+    /* not your turn */
+        SELECT "ERRTHREE";
         LEAVE makemove;
-    ELSE 
-        INSERT INTO moves(id_player, point_from, point_to) VALUES(p_id, from_point, to_point);
     END IF;
+    IF(color = 'w') THEN
+        SET step = (from_point - to_point);
+    ELSE
+        SET step = (to_point - from_point);
+    END IF;
+    
+        INSERT INTO moves(id_player, point_from, point_to) VALUES(p_id, from_point, to_point);
 END //
 
 DELIMITER //
@@ -214,22 +226,26 @@ roll: BEGIN
     DECLARE dice_2 INT DEFAULT ((SELECT FLOOR(RAND() * 6)) + 1);
     DECLARE cnt INT DEFAULT(SELECT COUNT(*) FROM moves WHERE id_player = p_id);
     IF(!check_password(login_, psw)) THEN
-        SELECT "ERROR! User password is not correct";
+    /* user password is not correct */
+        SELECT "ERRONE";
         LEAVE roll;
     END IF;
     IF(!game_exists(g_id)) THEN
-        SELECT "ERROR! Game do not exists!";
+    /* game do not exists */
+        SELECT "ERRTWO";
         LEAVE roll;
     END IF;
     IF(!turn(p_id)) THEN
-        SELECT "ERROR! Not your turn!";
+    /* not your turn */
+        SELECT "ERRTHREE";
         LEAVE roll;
-    ELSE IF((SELECT rolled FROM players WHERE id_player = p_id) = (cnt + 1)) THEN
-        SELECT "ERROR! You can't roll twice!";
+    ELSE IF EXISTS(SELECT 1 FROM games WHERE id_game = g_id AND d1 IS NULL OR d2 IS NULL) THEN
+    /* cant roll twice */
+        SELECT "ERRFOUR";
         LEAVE roll;
     END IF;
-    UPDATE players SET d1 = dice_1, d2 = dice_2, rolled = cnt + 1 WHERE id_player = p_id;
-    SELECT d1, d2 FROM players WHERE id_player = p_id;
+    UPDATE games SET d1 = dice_1, d2 = dice_2 WHERE id_game = g_id;
+    SELECT d1, d2 FROM games WHERE id_game = g_id;
     END IF;
 END //
 /*----------------------------INVITATION PROCESS----------------------------*/
@@ -237,15 +253,18 @@ DELIMITER //
 CREATE PROCEDURE INVITE(u_login VARCHAR(50), i_login VARCHAR(50))
 invitation: BEGIN
     IF(u_login = i_login) THEN
-        SELECT "ERROR! You're inviting yourself!";
+    /* ERRONE: inviting yourself*/
+        SELECT "ERRONE";
         LEAVE invitation;
     END IF;
     IF(!user_exist(i_login)) THEN
-        SELECT "ERROR! Invited user do not exist!";
+    /* ERRTWO: user do not exist */
+        SELECT "ERRTWO";
         LEAVE invitation;
     END IF;
     IF(getid(i_login) IS NULL) THEN
-        SELECT "ERROR! NULL invited!";
+    /* ERRTHREE: null invited */
+        SELECT "ERRTHREE";
         LEAVE invitation;
     END IF;
         INSERT INTO invites(id_inviting, id_invited, confirmation) VALUES(u_id, i_id, false);
@@ -257,7 +276,8 @@ DELIMITER //
 CREATE PROCEDURE CONFIRM(u_login VARCHAR(50), i_login VARCHAR(50), conf BOOLEAN)
 confirm: BEGIN
     IF(!invitation_exist(u_login, i_login)) THEN
-        SELECT "ERROR! Invitation do not exist!";
+    /* invitation do not exist */
+        SELECT "ERRONE";
         LEAVE confirm;
     END IF;
     UPDATE invites SET confirmation = conf WHERE id_inviting = get_id(u_login) AND id_invited = get_id(i_login);
