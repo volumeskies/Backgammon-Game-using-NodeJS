@@ -6,7 +6,8 @@ const dicesObj = {
     first: 0,
     second: 0
 }
-
+let room = window.location.pathname.slice(6);
+console.log(room);
 function insertChecker(checkerClassName){
     let checker = document.createElement('div');
     checker.className = checkerClassName;

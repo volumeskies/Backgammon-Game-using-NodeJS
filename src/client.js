@@ -63,6 +63,10 @@ socket.on('invitation', data=>{
         })
 })
 
+socket.on('decline', (data)=>{
+        Notify.error(`${data.username} отказался с Вами играть :(`);
+})
+
 $('.invite__button').on('click', event =>{
         event.preventDefault();
         let inviteLogin = $('input[name=login]').val();

@@ -442,6 +442,9 @@ socket.on('invitation', function (data) {
     });
   });
 });
+socket.on('decline', function (data) {
+  Notify.error("".concat(data.username, " \u043E\u0442\u043A\u0430\u0437\u0430\u043B\u0441\u044F \u0441 \u0412\u0430\u043C\u0438 \u0438\u0433\u0440\u0430\u0442\u044C :("));
+});
 $('.invite__button').on('click', function (event) {
   event.preventDefault();
   var inviteLogin = $('input[name=login]').val();

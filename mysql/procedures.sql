@@ -28,15 +28,17 @@ CREATE PROCEDURE CREATE_GAME(login_1 VARCHAR(50), login_2 VARCHAR(50))
 game: BEGIN
     DECLARE g_id INT;
     IF(login_1 = login_2) THEN
-        SELECT "ERROR! Same logins!";
+    /* same logins */
+        SELECT "ERRONE";
         LEAVE game;
     END IF;
     IF(!user_exist(login_1) OR !user_exist(login_2)) THEN
-        SELECT "ERROR! User not found!";
+    /* user not found */
+        SELECT "ERRTWO";
         LEAVE game;
     END IF;
     INSERT INTO games(id_game) VALUES(NULL);
-    SET g_id = (SELECT MAX(id_game) FROM Games);
+    SET g_id = (SELECT MAX(id_game) FROM games);
     IF(RAND() > 0.5) THEN
         INSERT INTO players(id_player, id_user, id_game, color) VALUES(NULL, get_id(login_1), g_id, 'w');
         INSERT INTO players(id_player, id_user, id_game, color) VALUES(NULL, get_id(login_2), g_id, 'b');
@@ -213,8 +215,25 @@ makemove: BEGIN
     ELSE
         SET step = (to_point - from_point);
     END IF;
-    
+    IF(step = dice_1) THEN
+        UPDATE games SET d1 = 0 WHERE game_id = g_id;
+    ELSE
+        IF(step = dice_2) THEN
+            UPDATE games SET d2 = 0 WHERE game_id = g_id;
+        ELSE
+            IF(step = dice_1 + dice_2) THEN
+                UPDATE games SET d1 = 0, d2 = 0 WHERE game_id = g_id;
+            END IF;
+        END IF;
+    END IF;
+        UPDATE points SET checkers_count = checkers_count - 1 WHERE player_id = p_id AND point_number = from_point;
+        UPDATE points SET checkers_count = checkers_count + 1 WHERE player_id = p_id AND point_number = to_point;
         INSERT INTO moves(id_player, point_from, point_to) VALUES(p_id, from_point, to_point);
+    IF(step <> dice_1 AND step <> dice_2 AND step <> dice_1 + dice_2) THEN
+    /* trying to make unavailable move */
+        SELECT "ERRFOUR";
+        LEAVE makemove;
+    END IF;
 END //
 
 DELIMITER //
@@ -275,28 +294,12 @@ END //
 DELIMITER //
 CREATE PROCEDURE CONFIRM(u_login VARCHAR(50), i_login VARCHAR(50), conf BOOLEAN)
 confirm: BEGIN
-    IF(!invitation_exist(u_login, i_login)) THEN
-    /* invitation do not exist */
-        SELECT "ERRONE";
-        LEAVE confirm;
-    END IF;
-    UPDATE invites SET confirmation = conf WHERE id_inviting = get_id(u_login) AND id_invited = get_id(i_login);
-    SELECT "TRUE";
-    LEAVE confirm;
-END //
-
-DELIMITER //
-CREATE PROCEDURE INV_ANSWER(u_login VARCHAR(50), i_login VARCHAR(50))
-answ: BEGIN
-    IF(!invitation_exist(u_login, i_login)) THEN
-        SELECT "ERROR! Invitation do not exist!";
-        LEAVE answ;
-    END IF;
-    IF(invitation_answer(u_login, i_login)) THEN
-        SELECT "TRUE";
-        LEAVE answ;
+    IF(conf = true) THEN
+    	DELETE FROM invites WHERE id_inviting = get_id(u_login) AND id_invited = get_id(i_login);
+    	SELECT "TRUE";
+    	LEAVE confirm;
     ELSE
-        SELECT "FALSE";
-        LEAVE answ;
+    	SELECT "FALSE";
+        LEAVE confirm;
     END IF;
 END //

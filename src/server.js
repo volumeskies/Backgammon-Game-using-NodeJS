@@ -43,7 +43,7 @@ app.get("/invite", urlencodedParser, (req, res)=>{
     res.sendFile(index);
 });
 
-app.get("/game", urlencodedParser, (req, res)=>{
+app.get("/game/:room", urlencodedParser, (req, res)=>{
     const index = path.join(__dirname, '../public', 'game.html');
     res.sendFile(index);
 });
@@ -255,11 +255,7 @@ io.sockets.on('connection', function(socket){
 		console.log('socketid:', socketID);
 		io.to(`${socketID}`).emit('invitation', {login_1: username, login_2: data.login});
 	})
-
-	socket.on('hey', data=>{
-		console.log(data.msg);
-	})
-
+	
 	socket.on('confirmation', data=>{
 		console.log('confirmation', data.login_1, data.login_2, data.confirmation);
 		function confirmation(data, callback){
@@ -267,8 +263,8 @@ io.sockets.on('connection', function(socket){
 				if (error) throw error;
 				var res = JSON.parse(JSON.stringify(result[0]));
 				console.log(res);
-				if(res[0].ERRONE){
-					console.log('ERROR! Invitation do not exist');
+				if(res[0].FALSE){
+					console.log('ERROR! declined');
 					callback(false);
 				}
 				else if(res[0].TRUE){
@@ -277,17 +273,60 @@ io.sockets.on('connection', function(socket){
 				}
 			  });
 		}
+
+		function getGameId(data, callback){
+			con.query('CALL CREATE_GAME(?, ?)', [data.login_1, data.login_2], function(error, result){
+				if(error) throw error;
+				var res = JSON.parse(JSON.stringify(result[0]));
+				console.log(res);
+				if(res[0].g_id){
+					console.log('Created game');
+					callback(res[0].g_id);
+				}
+				else if(res[0].ERRONE){
+					console.log('ERROR! same logins');
+					callback(false);
+				}
+				else if(res[0].ERRTWO){
+					console.log('ERROR! user not found');
+					callback(false);
+				}
+			})
+		}
+
 		confirmation({login_1: data.login_1, login_2: data.login_2, confirmation: data.confirmation}, (val)=>{
 			if(!val){
-				console.log('decline');
-				socket.emit('decline', {invited: data['login_2']});
+				console.log('DECLINED :(');
+						let socketID = 0;
+						for(let key in users){
+							if(users[key].login === data.login_1)
+								socketID = users[key].socket;
+						}
+						io.to(`${socketID}`).emit('decline', {username: data.login_2});
 			}
 			else{
-				console.log('accept');
-				/*con.query INV answer?accept:decline*/
-				socket.emit('accept', {invited: data['login_2']});
-			}
+					console.log('ACCEPTED! :)');
+					let socket_1 = 0;
+					let socket_2 = 0;
+					for(let key in users){
+						if(users[key].login === data.login_1)
+							socket_1 = users[key].socket;
+						if(users[key].login === data.login_2)
+							socket_2 = users[key].socket;
+					}
+					getGameId({login_1: data.login_1, login_2: data.login_2}, (val)=>{
+						if(!val){
+							console.log('Can\'t create game');
+						}
+						else{
+							console.log(users, socket_1, socket_2);
+							io.sockets.connected[socket_1].join(`${val}`);
+							io.sockets.connected[socket_2].join(`${val}`);
+							io.to(`${val}`).emit('redirect', `game/${val}`)
+						}
+					})
+				}
+			});
 				
 		})
-	})
-});
+	});

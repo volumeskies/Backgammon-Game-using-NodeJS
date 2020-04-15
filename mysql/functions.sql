@@ -48,13 +48,6 @@ BEGIN
 END //
 
 DELIMITER //
-CREATE FUNCTION invitation_answer(u_login VARCHAR(50), i_login VARCHAR(50))
-RETURNS BOOLEAN
-BEGIN
-    RETURN (SELECT confirm FROM invites WHERE id_inviting = get_id(u_login) AND id_invited = get_id(i_login));
-END //
-
-DELIMITER //
 CREATE FUNCTION game_exists(game_id int)
 RETURNS BOOLEAN
 BEGIN

@@ -113,6 +113,8 @@ var dicesObj = {
   first: 0,
   second: 0
 };
+var room = window.location.pathname.slice(6);
+console.log(room);
 
 function insertChecker(checkerClassName) {
   var checker = document.createElement('div');
