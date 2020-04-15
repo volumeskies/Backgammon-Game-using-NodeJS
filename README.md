@@ -5,9 +5,8 @@ A little backgammon game made with Node.JS
 
 ## How to run?
 ```
-nodemon --experimental-modules server.js
+npm run start
 ```
-on .src
 
 ## LIVE DEMO
 [click me!](https://mighty-chamber-13325.herokuapp.com/)
