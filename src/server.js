@@ -154,53 +154,6 @@ io.sockets.on('connection', function(socket){
 		});
 	});
 
-	/* CHECK POINTS */
-	socket.on('check_points', data =>{
-		console.log(data);
-		function checkPoints(data, callback){
-			if(con.query("CALL IS_POINT_FREE(?)", [data.from + data.dice_1], function (error, result){
-				if (error) throw error;
-				var res = JSON.parse(JSON.stringify(result[0]));
-				if(res[0].FALSE){
-					console.log('d1no');
-					callback('d1no');
-				}
-				else if(res[0].TRUE){
-					console.log('d1yes');
-					callback('d1yes');
-				}
-			}));
-			if(con.query("CALL IS_POINT_FREE(?)", [data.from + data.dice_2], function (error, result){
-				if (error) throw error;
-				var res = JSON.parse(JSON.stringify(result[0]));
-				if(res[0].FALSE){
-					console.log('d2no');
-					callback('d2no');
-				}
-				else if(res[0].TRUE){
-					console.log('d2yes');
-					callback('d2yes');
-				}
-			}));
-			if(con.query("CALL IS_MULTIPOINT_FREE(?, ?)", [data.from, data.dice_1 + data.dice_2], function (error, result){
-				if (error) throw error;
-				var res = JSON.parse(JSON.stringify(result[0]));
-				if(res[0].FALSE){
-					console.log('d3no');
-					callback('d3no');
-				}
-				else if(res[0].TRUE){
-					console.log('d3yes');
-					callback('d3yes');
-				}
-			}));
-		}
-	
-		checkPoints(data, (val)=>{
-			io.emit('check_answer', val);
-		});
-    	
-	})
 
 	/* INVITE */
 	socket.on('invite', data=>{
@@ -322,11 +275,200 @@ io.sockets.on('connection', function(socket){
 							console.log(users, socket_1, socket_2);
 							io.sockets.connected[socket_1].join(`${val}`);
 							io.sockets.connected[socket_2].join(`${val}`);
-							io.to(`${val}`).emit('redirect', `game/${val}`)
+							io.to(`${val}`).emit('redirect', `game/${val}`);
 						}
 					})
 				}
 			});
 				
 		})
+	
+
+	socket.on('gamestate', data=>{
+		let flag = false;
+		for(let key in users){
+			if(users[key].session === socket.request.session.id){
+				socket.join(`${data.room}`);
+			}
+		}
+		io.to(`${data.room}`).emit('game_state', {room: data.room})
+	})
+
+	socket.on('getGameState', data=>{
+		console.log('sdjs');
+		let login1 = '';
+		let login2 = '';
+		let sockets = Object.keys(io.sockets.adapter.rooms[`${data.room}`].sockets);
+		console.log('sockets: ', sockets);
+		for(let key in users){
+			if(users[key].socket === sockets[0])
+				login1 = users[key].login;
+			if(users[key].socket === sockets[1])
+				login2 = users[key].login;
+		}
+		console.log('logins:', login1, login2);
+
+		function gameState(data, callback){
+			con.query('CALL GAMESTATE(?, ?)', [data.login1, data.login2], function(error, result){
+				if(error) throw error;
+				var res = JSON.parse(JSON.stringify(result[0]));
+				console.log(res);
+				if(res[0].ERRONE){
+					console.log('ERROR game do not exist');
+					callback(false);
+				}
+				else{
+					console.log('ok');
+					callback([res[0].player_1, res[0].player_2, res[0].id_game, res[0].color_1, res[0].color_2]);
+				}
+			})
+		}
+
+		function getValues(data, callback){
+			con.query('SELECT (SELECT login FROM users WHERE id_user = (SELECT id_user FROM players WHERE id_player = ?)) AS login, id_player, point_number, checkers_count, get_color(?, (SELECT id_game FROM players WHERE id_player = ?)) AS color FROM points WHERE id_player = ? UNION SELECT (SELECT login FROM users WHERE id_user = (SELECT id_user FROM players WHERE id_player = ?)) AS login, id_player, point_number, checkers_count, get_color(?, (SELECT id_game FROM players WHERE id_player = ?)) AS color FROM points WHERE id_player = ?', [data.player_1, data.player_1, data.player_1, data.player_1, data.player_2, data.player_2, data.player_2, data.player_2], function(error, result){
+				if(error) throw error;
+				console.log(result);
+				callback(result);
+			})
+		}
+
+		gameState({login1: login1, login2: login2}, (val)=>{
+			if(!val){
+				console.log('game do not exist')
+			}
+			else{
+				console.log(val);
+				socket.emit('getNames');
+				let login = '';
+				for(let key in users){
+					if(users[key].socket === socket.id){
+						login = users[key].login;
+					}
+				}
+				getValues({player_1: val[0], player_2: val[1]}, (value)=>{
+					socket.emit('set_values', {data: value, login: login});
+				});
+			}
+		})
+	})
+
+	socket.on('get_usernames', data=>{
+		console.log('this socket ', socket.id);
+		console.log(data.room);
+		io.to(`${data.room}`).emit('usernames', {room: data.room});
 	});
+
+	let names = [];
+	socket.on('user_names', data=>{
+		console.log('im here')
+		let login1 = '';
+		let login2 = '';
+		let sockets = Object.keys(io.sockets.adapter.rooms[`${data.room}`].sockets);
+		console.log('sockets: ', sockets);
+		for(let key in users){
+			if(users[key].socket === sockets[0])
+				login1 = users[key].login;
+			if(users[key].socket === sockets[1])
+				login2 = users[key].login;
+		}
+		console.log('logins:', login1, login2);
+
+		function getUserNames(data, callback){
+			con.query('SELECT username, login FROM users WHERE id_user = get_id(?) OR id_user = get_id(?)', [data.login1, data.login2], function(error, res){
+				if(error) throw error;
+				console.log(res);
+				callback([res[0].username, res[0].login, res[1].username, res[1].login]);
+			})
+		}
+
+		getUserNames({login1: login1, login2: login2}, (val)=>{
+			console.log(val);
+			io.to(`${data.room}`).emit('set_username', {first_name: val[0], second_name: val[2], first_login: val[1], second_login: val[3]});
+		})
+	})
+
+	/* GAME PROCCESS */
+	socket.on('roll', data=>{
+		function roll(data, callback){
+			con.query('CALL ROLL(?, (SELECT password FROM users WHERE login = ?))', [data.login, data.login], function(error, result){
+				if(error) throw error;
+				var res = JSON.parse(JSON.stringify(result[0]));
+				console.log(res);
+				if(res[0].ERRONE){
+					console.log('ERROR! Wrong password');
+					callback(false);
+				}
+				else if(res[0].ERRTWO){
+					console.log('ERROR! game do not exist');
+					callback(false);
+				}
+				else if(res[0].ERRTHREE){
+					console.log('ERROR! not your turn');
+					callback(3);
+				}
+				else if(res[0].ERRFOUR){
+					console.log('error youve played these values');
+					callback(false);
+				}
+				else if(res[0].ERRFIVE){
+					console.log('error rolled twice');
+					callback(5);
+				}
+				else{
+					console.log('rolled');
+					callback([res[0]])
+				}
+			})
+		}
+
+		roll({login: data.login}, (val)=>{
+			if(val == 3){
+				console.log('not your turn!');
+				socket.emit('notturn');
+				return;
+			}
+			else if(val == 5){
+				console.log('twice');
+				socket.emit('twice');
+				return;
+			}
+			else if(!val){
+				console.log('error');
+				return;
+			}
+			else{
+				console.log(val);
+				socket.emit('rollvalues', {dice_1: val[0].d1, dice_2: val[0].d2});
+			}
+		})
+	})
+
+	socket.on('free_points', data=>{
+		function freePoints(data, callback){
+			con.query('CALL FREE_POINTS(?, ?, ?, ?)', [data.login, data.from, data.dice_1, data.dice_2], function(error, result){
+				if(error) throw error;
+				var res = JSON.parse(JSON.stringify(result[0]));
+				console.log(res);
+				if(res[0].ERRONE){
+					console.log('Error wrong move white');
+					callback(false);
+				}
+				else if(res[0].ERRTWO){
+					console.log('Error wrong move black');
+					callback(false);
+				}else{
+					console.log('free points', res);
+					callback(res[0]);
+				}
+			})
+		}
+
+		freePoints({login: data.login, from: data.from, dice_1: data.dice_1, dice_2: data.dice_2}, (val)=>{
+			if(!val){
+				console.log('error');
+				return
+			}
+			socket.emit('show_freePoints', val);
+		})
+	})
+});

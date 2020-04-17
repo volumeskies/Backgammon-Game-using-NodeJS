@@ -1,13 +1,86 @@
+import { Notify } from './notifications.js';
 var socket = io.connect();
 const pointsTop = [...document.getElementById('points_top').children];
 const pointsBottom = [...document.getElementById('points_bottom').children].reverse();
 const points = pointsBottom.concat(pointsTop);
-const dicesObj = {
-    first: 0,
-    second: 0
-}
+let currDices=[];
 let room = window.location.pathname.slice(6);
-console.log(room);
+const currChecker = {
+    pointNumber: 0,
+    checkerCount: 0
+}
+socket.on('connect', ()=>{
+    socket.emit('gamestate', {room: room})
+});
+
+socket.on('game_state', data=>{
+    socket.emit('getGameState', {room: room});
+})
+
+socket.on('getNames', data=>{
+    socket.emit('get_usernames', {room: room});
+})
+
+let username1 = {};
+let username2 = {};
+
+socket.on('usernames', data=>{
+    socket.emit('user_names', {room: room});
+})
+
+socket.on('set_username', data=>{
+    username1.login = data.first_login;
+    username2.login = data.second_login;
+    username1.name = data.first_name;
+    username2.name = data.second_name;
+    console.log(username1, username2);
+    let firstname = [...document.getElementsByClassName('first__name')];
+    firstname[0].textContent = `${username1.name}`;
+    let secondname = [...document.getElementsByClassName('second__name')];
+    secondname[0].textContent = `${username2.name}`;
+})
+
+let user1={
+    id: 0,
+    login: '',
+    color: '',
+    points: {}
+}
+let user2={
+    id: 0,
+    login: '',
+    color: '',
+    points: {}
+}
+
+let currUser = {
+    login: '',
+}
+
+socket.on('set_values', data=>{
+    console.log(data.data);
+    currUser.login = data.login;
+    user1.id = data.data[0].id_player;
+    user1.login = data.data[0].login;
+    user1.points = data.data.reduce((acc, curr)=>{
+        if(curr.id_player == user1.id){
+            acc[curr.point_number] = curr.checkers_count;
+            }
+            return acc;
+        }, {})
+    user1.color = data.data[0].color;
+    user2.id = data.data[data.data.length - 1].id_player;
+    user2.color = data.data[data.data.length - 1].color;
+    user2.login = data.data[data.data.length - 1].login;
+    user2.points = data.data.reduce((acc, curr)=>{
+        if(curr.id_player == user2.id){
+            acc[curr.point_number] = curr.checkers_count;
+            }
+            return acc;
+        }, {})
+    console.log(currUser);
+})
+
 function insertChecker(checkerClassName){
     let checker = document.createElement('div');
     checker.className = checkerClassName;
@@ -15,20 +88,27 @@ function insertChecker(checkerClassName){
 }
 
 function fillTheBoard(){
-    for(let i = 0; i < 2; i++){
-        points[0].append(insertChecker('checker-black checker'));
-        points[23].append(insertChecker('checker-white checker'));
+    console.log(user1);
+    console.log(user2);
+    let className1 = user1.color == 'w'?'checker-white checker':'checker-black checker';
+    let className2 = user2.color == 'w'?'checker-white checker':'checker-black checker';
+
+    console.log(user1.points);
+    for(let key in user1.points){
+        console.log('key:', key);
+        for(let i = 0; i < user1.points[key]; i++){
+            console.log('points key:', points[key])
+            points[key - 1].append(insertChecker(className1));
+        }
     }
-    for(let i = 0; i < 5; i++){
-        points[11].append(insertChecker('checker-black checker'));
-        points[18].append(insertChecker('checker-black checker'));
-        points[5].append(insertChecker('checker-white checker'));
-        points[12].append(insertChecker('checker-white checker'));
+    for(let key in user2.points){
+        console.log('key:', key);
+        for(let i = 0; i < user2.points[key]; i++){
+            console.log('points key:', points[key])
+            points[key - 1].append(insertChecker(className2));
+        }
     }
-    for(let i = 0; i < 3; i++){
-        points[16].append(insertChecker('checker-black checker'));
-        points[7].append(insertChecker('checker-white checker'));
-    }
+
 }
 
 function parsePointsId(pointId){
@@ -84,62 +164,114 @@ function parsePointsId(pointId){
     }
 }
 
-function highlightMoves(pointNumber){
-    console.log('point number:', pointNumber);
-    points[pointNumber - 1].append(insertChecker('checker-move'));
-}
-
-function parseCheckAnswer(answ, dice_1, dice_2){
-    switch(answ){
-        case 'd1no':
-            break;
-        case 'd1yes':
-            highlightMoves(dice_1);
-            break;
-        case 'd2no':
-            break;
-        case 'd2yes':
-            highlightMoves(dice_2);
-            break;
-        case 'd3no':
-            break;
-        case 'd3yes':
-            highlightMoves(dice_1 + dice_2);
-            break;
+function highlightLast(pointNumber){
+    let direction = pointNumber > 11 ? 'top' : 'bottom';
+    if(direction == 'top'){
+        if(points[pointNumber].childNodes.length > 1)
+            points[pointNumber].lastChild.className += ' checker-move';
+        else
+            return;
+    }
+    if(direction == 'bottom'){
+        if(points[pointNumber].childNodes.length > 1)
+            points[pointNumber].firstChild.className += ' checker-move';
+        else
+            return;
     }
 }
 
-function showAvMovesDatabase(from, dicesObj){
+function highlightMoves(...args){
+    console.log(args);
+    for(let pointNumber in args){
+        if(!pointNumber || !points[pointNumber]) continue;
+        if(points[pointNumber].childNodes[0] != undefined){
+            if(points[pointNumber].childNodes[0].className.includes('checker-move'))
+                return;
+            highlightLast(pointNumber);
+            return;
+        }
+        console.log(pointNumber);
+        points[pointNumber].append(insertChecker('checker-move'))};
+}
+
+function showAvMovesDatabase(from, dices){
     from = parsePointsId(from);
     console.log(from);
-    socket.emit('check_points', {
+    console.log(dices);
+    socket.emit('free_points', {
+        login: currUser.login,
         from: from,
-        dice_1: dicesObj.first,
-        dice_2: dicesObj.second
+        dice_1: dices[0],
+        dice_2: dices[1]
     });
-    socket.on('check_answer', data =>{
-        parseCheckAnswer(data, from + dicesObj.first, from + dicesObj.second);
+    socket.on('show_freePoints', data=>{
+        console.log(data);
+        for(let key in data){
+            if(key == undefined)
+                key = 0;
+        }
+        highlightMoves(data.i, data.point_1, data.point_2);
     })
+    /*socket.on('check_answer', data =>{
+        parseCheckAnswer(data, from + dicesObj.first, from + dicesObj.second);
+    })*/
 }
 
 function getOpenCheckers(){
     console.log(points)
+    let color = user1.login == currUser.login?user1.color:user2.color;
+    console.log(color);
     let checkers = [];
-    for(let elem of points){
-        if(elem.className == 'points-bottom' && elem.childElementCount != 0){
-            checkers.push(elem.firstChild);
-        }
-        if(elem.className == 'points-top' && elem.childElementCount != 0){
-            checkers.push(elem.lastChild);
+    if(color == 'w'){
+        for(let elem of points){
+            if(elem.className == 'points-bottom' && elem.childElementCount != 0){
+                if(elem.firstChild.className.includes('checker-white'))
+                    checkers.push(elem.firstChild);
+            }
+            if(elem.className == 'points-top' && elem.childElementCount != 0){
+                if(elem.lastChild.className.includes('checker-white'))
+                    checkers.push(elem.lastChild);
+            }
         }
     }
+    else if(color == 'b'){
+        for(let elem of points){
+            if(elem.className == 'points-bottom' && elem.childElementCount != 0){
+                if(elem.firstChild.className.includes('checker-black'))
+                    checkers.push(elem.firstChild);
+            }
+            if(elem.className == 'points-top' && elem.childElementCount != 0){
+                if(elem.lastChild.className.includes('checker-black'))
+                    checkers.push(elem.lastChild);
+            }
+        }
+    }
+    
     return checkers;
 }
 
-function showAvailableMoves(rolledDices){
-    let checkers = getOpenCheckers();
-    console.log('open checkers: ', checkers);
+function unclickElements(checkers){
+    points.forEach(point =>{
+        let childrenArray = [...point.childNodes];
+        for(let child of childrenArray){
+            console.log(child);
+            if(child.className.includes('checker-move') && (child.nextSibling || child.previousSibling))
+                child.className = child.className.replace(/\bchecker-move\b/ig, '');
+            else
+            if(child.className.includes('checker-move'))
+                point.removeChild(child);
+            continue;
+        }
+    }) 
     for(let elem of checkers){
+        elem.className = elem.className.replace(/\bchecker-clicked\b/ig, '');
+    }
+}
+
+function showAvailableMoves(){
+    console.log('dices:', currDices);
+    let openCheckers = getOpenCheckers();
+    for(let elem of openCheckers){
         elem.addEventListener('mouseover', ()=>{
             event.preventDefault();
             elem.className += ' checker-hover'
@@ -149,63 +281,73 @@ function showAvailableMoves(rolledDices){
             elem.className = elem.className.replace(/\bchecker-hover\b/ig, '');
         })
         elem.addEventListener('click', ()=>{
-            event.preventDefault();
             if(elem.className.match(/\bchecker-clicked\b/ig)){
                 elem.className = elem.className.replace(/\bchecker-clicked\b/ig, '');
+                unclickElements(checkers);
                 return;
             }
-            elem.className += ' checker-clicked'
-            showAvMovesDatabase(elem.parentNode.id, rolledDices);
+            if(elem.className.match(/\bchecker-move\b/ig)){
+                unclickElements(checkers);
+                event.preventDefault();
+                elem.className += ' checker-clicked';
+                //clickCheckerMove(currChecker.pointFrom);
+                return;
+            }
+            unclickElements(checkers);
+            event.preventDefault();      
+            elem.className += ' checker-clicked';
+            currChecker.pointFrom = elem.parentNode.id;
+            showAvMovesDatabase(currChecker.pointFrom, currDices);
         })
     }
 }
 
-function randNumber(){
-    let rand = 1 + Math.random() * 6;
-    return Math.floor(rand);
-}
-
-function rollTheDicesArray(){
-    for(let key in dicesObj){
-        if(dicesObj.hasOwnProperty(key)){
-            dicesObj[key] = randNumber();
-        }
-    }
-    let dices = [dicesObj.first, dicesObj.second];
-    console.log(dicesObj);
-    return dices;
-}
-
 function drawRolledDices(rolledDices){
     let container = [...document.getElementsByClassName('dices')];
-    console.log(container);
+    let firstplayer = [...document.getElementsByClassName('first__player')];
+    let secondplayer = [...document.getElementsByClassName('second__player')];
+    let firstButton = [...document.getElementsByClassName('first__button')][0];
+    let secondButton = [...document.getElementsByClassName('second__button')][0];
+    let currentContainer = 0;
+    if(container[0].firstElementChild.textContent == username1.name && currUser.login == username1.login){
+        firstplayer[0].className += ' roll';
+        currentContainer = firstplayer;
+        firstButton.className = firstButton.className.replace(/\bhide\b/ig, '');
+    }
+    else{
+        if(container[1].firstElementChild.textContent == username2.name && currUser.login == username2.login){
+            secondplayer[0].className += ' roll';
+            currentContainer = secondplayer;
+            secondButton.className = secondButton.className.replace(/\bhide\b/ig, '');
+        }
+    }
     for(let elem of rolledDices){
         let image = document.createElement('img');
         console.log(elem)
         switch(elem){
             case 1:
-                image.src = './images/one.png';
-                container[0].appendChild(image);
+                image.src = '../images/one.png';
+                currentContainer[0].appendChild(image);
                 break;
             case 2:
-                image.src = './images/two.png';
-                container[0].appendChild(image);
+                image.src = '../images/two.png';
+                currentContainer[0].appendChild(image);
                 break;
             case 3:
-                image.src = './images/three.png';
-                container[0].appendChild(image);
+                image.src = '../images/three.png';
+                currentContainer[0].appendChild(image);
                 break;
             case 4:
-                image.src = './images/four.png';
-                container[0].appendChild(image);
+                image.src = '../images/four.png';
+                currentContainer[0].appendChild(image);
                 break;
             case 5:
-                image.src = './images/five.png';
-                container[0].appendChild(image);
+                image.src = '../images/five.png';
+                currentContainer[0].appendChild(image);
                 break;
             case 6:
-                image.src = './images/six.png';
-                container[0].appendChild(image);
+                image.src = '../images/six.png';
+                currentContainer[0].appendChild(image);
                 break;
         }
     }
@@ -222,20 +364,46 @@ function clearDiceContainer(container){
     }
 }
 
+let error = 0;
+
 function rollTheDices(){
-    let container = [...document.getElementsByClassName('dices')];
+    let container = [...document.getElementsByClassName('roll')];
+    const eventCallback = (event)=>{
+        event.preventDefault();
+        socket.emit('roll', {login: currUser.login});
+    }
     for(let elem of container){
-        elem.addEventListener('click', ()=>{
-            event.preventDefault();
-            let dices = rollTheDicesArray();
+        elem.addEventListener('click', eventCallback);
+        socket.on('rollvalues', data=>{
+            currDices = [data.dice_1, data.dice_2];
+            console.log(currDices);
             clearDiceContainer(elem);
-            drawRolledDices(dices);
+            drawRolledDices(currDices);
+            showAvailableMoves();
+        })
+        socket.on('notturn', data=>{
+            Notify.error('Не Ваш ход!');
+        })
+        socket.on('twice', data=>{
+            Notify.error('Вы уже кидали кубики!');
+            error = 5;
         })
     }
+    if(error == 5){
+        for(let elem of container){
+            elem.removeEventListener('click', eventCallback);
+        }
+        error = 0;
+    }
+    
+    
 }
 
-fillTheBoard();
-socket.emit('fill');
-drawRolledDices(rollTheDicesArray());
-rollTheDices();
-showAvailableMoves(dicesObj);
+let checkers = '';
+setTimeout(()=>{
+    fillTheBoard();
+    drawRolledDices([1,1]);
+    rollTheDices();
+    checkers = [...document.getElementsByClassName('checker')];
+}
+, 1000);

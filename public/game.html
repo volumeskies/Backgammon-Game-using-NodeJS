@@ -10,8 +10,11 @@
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
     </head>
     <body>
-        <div class="dices first__player">
-            <h2 class="first__name name">Первый</h2>
+        <div class="dices__container">
+            <div class="dices first__player">
+                <h2 class="first__name name"></h2>
+            </div>
+            <button class="first__button hide">Следующий ход</button>
         </div>
         <div class="board">
             <div id="points_top">
@@ -43,10 +46,14 @@
                 <div id="one" class="points-bottom"></div>
             </div>
         </div>
-        <div class="dices second__player">
-            <h2 class="second__name name">Второй</h2>
+        <div class='dices__container'>
+            <div class="dices second__player">
+                <h2 class="second__name name"></h2>
+            </div>
+            <button class="second__button hide">Следующий ход</button>
         </div>
     <script src="/socket.io/socket.io.js"></script>
     <script src="/game.js"></script>
+    <div class="notifications"></div>
     </body>
 </html>

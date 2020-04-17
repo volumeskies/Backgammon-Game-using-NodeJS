@@ -81,19 +81,16 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 1);
+/******/ 	return __webpack_require__(__webpack_require__.s = 2);
 /******/ })
 /************************************************************************/
 /******/ ([
-/* 0 */,
-/* 1 */
+/* 0 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-// ESM COMPAT FLAG
-__webpack_require__.r(__webpack_exports__);
-
-// CONCATENATED MODULE: ./src/notifications.js
+/* unused harmony export Notifications */
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Notify; });
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
 
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
@@ -151,29 +148,42 @@ var Notifications = /*#__PURE__*/function () {
   return Notifications;
 }();
 var Notify = new Notifications();
+
+/***/ }),
+/* 1 */,
+/* 2 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+// ESM COMPAT FLAG
+__webpack_require__.r(__webpack_exports__);
+
+// EXTERNAL MODULE: ./src/notifications.js
+var notifications = __webpack_require__(0);
+
 // CONCATENATED MODULE: ./src/validation.js
-function validation_toConsumableArray(arr) { return validation_arrayWithoutHoles(arr) || validation_iterableToArray(arr) || validation_unsupportedIterableToArray(arr) || validation_nonIterableSpread(); }
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
 
-function validation_nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 
-function validation_unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return validation_arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(n); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return validation_arrayLikeToArray(o, minLen); }
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(n); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
-function validation_iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
+function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
 
-function validation_arrayWithoutHoles(arr) { if (Array.isArray(arr)) return validation_arrayLikeToArray(arr); }
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
 
-function validation_arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
-function validation_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-function validation_defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
-function validation_createClass(Constructor, protoProps, staticProps) { if (protoProps) validation_defineProperties(Constructor.prototype, protoProps); if (staticProps) validation_defineProperties(Constructor, staticProps); return Constructor; }
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
 
 var validation_Validation = /*#__PURE__*/function () {
   function Validation() {
-    validation_classCallCheck(this, Validation);
+    _classCallCheck(this, Validation);
 
     this.login = true;
     this.password = true;
@@ -181,10 +191,10 @@ var validation_Validation = /*#__PURE__*/function () {
     this.username = true;
   }
 
-  validation_createClass(Validation, [{
+  _createClass(Validation, [{
     key: "resetFields",
     value: function resetFields() {
-      var fields = validation_toConsumableArray(document.getElementsByTagName('input'));
+      var fields = _toConsumableArray(document.getElementsByTagName('input'));
 
       fields.forEach(function (elem) {
         elem.style.border = 0;
@@ -194,25 +204,25 @@ var validation_Validation = /*#__PURE__*/function () {
     key: "highlightFields",
     value: function highlightFields() {
       if (!this.login) {
-        var field = validation_toConsumableArray(document.getElementsByName('login'));
+        var field = _toConsumableArray(document.getElementsByName('login'));
 
         field[0].style.border = '2px solid rgb(228, 143, 152)';
       }
 
       if (!this.password) {
-        var _field = validation_toConsumableArray(document.getElementsByName('password'));
+        var _field = _toConsumableArray(document.getElementsByName('password'));
 
         _field[0].style.border = '2px solid rgb(228, 143, 152)';
       }
 
       if (!this.confirm_password) {
-        var _field2 = validation_toConsumableArray(document.getElementsByName('password_correct'));
+        var _field2 = _toConsumableArray(document.getElementsByName('password_correct'));
 
         _field2[0].style.border = '2px solid rgb(228, 143, 152)';
       }
 
       if (!this.username) {
-        var _field3 = validation_toConsumableArray(document.getElementsByName('name'));
+        var _field3 = _toConsumableArray(document.getElementsByName('name'));
 
         _field3[0].style.border = '2px solid rgb(228, 143, 152)';
       }
@@ -241,13 +251,13 @@ var validation_Validation = /*#__PURE__*/function () {
     key: "loginValidation",
     value: function loginValidation(login_) {
       if (login_.length > 255) {
-        Notify.error('Слишком длинный логин!');
+        notifications["a" /* Notify */].error('Слишком длинный логин!');
         this.login = false;
         return;
       }
 
       if (login_ === '') {
-        Notify.error('Введите логин!');
+        notifications["a" /* Notify */].error('Введите логин!');
         this.login = false;
         return;
       }
@@ -258,13 +268,13 @@ var validation_Validation = /*#__PURE__*/function () {
     key: "passwordValidation",
     value: function passwordValidation(password_) {
       if (password_.length > 255) {
-        Notify.error('Слишком длинный пароль!');
+        notifications["a" /* Notify */].error('Слишком длинный пароль!');
         this.password = false;
         return;
       }
 
       if (password_ === '') {
-        Notify.error('Введите пароль!');
+        notifications["a" /* Notify */].error('Введите пароль!');
         this.password = false;
         return;
       }
@@ -275,13 +285,13 @@ var validation_Validation = /*#__PURE__*/function () {
     key: "userNameValidation",
     value: function userNameValidation(username_) {
       if (username_.length > 255) {
-        Notify.error('Слишком длинное имя пользователя!');
+        notifications["a" /* Notify */].error('Слишком длинное имя пользователя!');
         this.username = false;
         return;
       }
 
       if (username_ === '') {
-        Notify.error('Введите имя пользователя!');
+        notifications["a" /* Notify */].error('Введите имя пользователя!');
         this.username = false;
         return;
       }
@@ -292,13 +302,13 @@ var validation_Validation = /*#__PURE__*/function () {
     key: "confirmPasswordValidation",
     value: function confirmPasswordValidation(password_, confirm_) {
       if (confirm_ === '') {
-        Notify.error('Подтвердите пароль!');
+        notifications["a" /* Notify */].error('Подтвердите пароль!');
         this.confirm = false;
         return;
       }
 
       if (password_ !== confirm_) {
-        Notify.error('Пароли не совпадают!');
+        notifications["a" /* Notify */].error('Пароли не совпадают!');
         this.confirm = false;
         return;
       }
@@ -413,11 +423,11 @@ $('.signup__button').on('click', function (event) {
 });
 socket.on('user_signin_notification', function (data) {
   console.log('dsds');
-  if (data.val == false) Notify.error('Неверно введён логин или пароль!');else if (data.val == true) Notify.success('Успешно!');
+  if (data.val == false) notifications["a" /* Notify */].error('Неверно введён логин или пароль!');else if (data.val == true) notifications["a" /* Notify */].success('Успешно!');
 });
 socket.on('user_signup_notification', function (data) {
   console.log('dsds');
-  if (data.val == false) Notify.error('Ошибка!');else if (data.val == true) Notify.success('Успешно!');
+  if (data.val == false) notifications["a" /* Notify */].error('Ошибка!');else if (data.val == true) notifications["a" /* Notify */].success('Успешно!');
 });
 socket.on('redirect', function (url) {
   window.location.href = url;
@@ -443,7 +453,7 @@ socket.on('invitation', function (data) {
   });
 });
 socket.on('decline', function (data) {
-  Notify.error("".concat(data.username, " \u043E\u0442\u043A\u0430\u0437\u0430\u043B\u0441\u044F \u0441 \u0412\u0430\u043C\u0438 \u0438\u0433\u0440\u0430\u0442\u044C :("));
+  notifications["a" /* Notify */].error("".concat(data.username, " \u043E\u0442\u043A\u0430\u0437\u0430\u043B\u0441\u044F \u0441 \u0412\u0430\u043C\u0438 \u0438\u0433\u0440\u0430\u0442\u044C :("));
 });
 $('.invite__button').on('click', function (event) {
   event.preventDefault();

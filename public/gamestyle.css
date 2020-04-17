@@ -14,7 +14,9 @@
     --coral: #D86868;
     --magenta: #7F2E63;
     --purple: #29193F;
-    --white: #E6E1DE;
+    --white: #EDEDED;
+    --green: #39B549;
+    --dark_green: rgb(23, 95, 33);
 }
 
 body{
@@ -28,30 +30,46 @@ body{
     font-family: 'Open Sans';
 }
 
+.hide{
+    display: none;
+}
+
+.dices__container{
+    height: 600px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    margin-left: 30px;
+}
+
 .dices{
-    width: 300px;
-    height: 200px;
+    width: 270px;
+    height: 150px;
+}
+
+.roll{
+    z-index: 100;
     cursor: pointer;
-    margin: 20px;
 }
 
 .dices img{
     width: 70px;
     height: 70px;
-    margin-left: 15px;
+    margin: 0 5px;
 }
 
 .name{
     font-weight: 600;
     font-size: 30px;
     color: #ffffff;
-    margin-left: 15px;
     margin-bottom: 15px;
     text-overflow: ellipsis;
     overflow: hidden; 
 }
 
 .board{
+    margin: 0 -10px;
     width: 900px;
     height: 600px;
     display: flex;
@@ -154,4 +172,80 @@ body{
     height: 54px;
     border-radius: 50%;
     background-color: white;
+}
+
+
+.notifications{
+    z-index: -1;
+    right: 0;
+    position: fixed;
+    width: 250px;
+    height: 90vh;
+    margin: 40px 20px;
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: flex-end;
+}
+
+.popup__error{
+    width: 250px;
+    height: 80px;
+    background-color: #F8D7DA;
+    background-image: url('./images/error.png');
+    background-repeat: no-repeat;
+    background-position: 26px 27px;
+    background-size: 25px;
+    border: 2px solid #F5C6CB;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+
+.popup__error span{
+    font-family: 'Open Sans';
+    font-weight: 600;
+    font-size: 16px;
+    color: #721C24;
+    margin-left: 70px;
+}
+
+.popup__success{
+    width: 300px;
+    height: 80px;
+    background-color: #D4EDDA;
+    background-image: url('./images/success.png');
+    background-repeat: no-repeat;
+    background-position: 26px 27px;
+    background-size: 25px;
+    border: 2px solid #C3E6CB;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+.popup__success span{
+    font-family: 'Open Sans';
+    font-weight: 600;
+    font-size: 16px;
+    color: #155724;
+    margin-left: 70px;
+}
+
+button{
+    font-family: 'Open Sans';
+    font-weight: 600;
+    font-size: 18px;
+    color: var(--white);
+    background-color: var(--green);
+    border: 0;
+    border-radius: 5px;
+    padding: 8px;
+    outline: none;
+    margin: 5px 0;
+}
+
+button:hover{
+    cursor: pointer;
+    background-color: var(--dark_green);
 }

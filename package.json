@@ -15,6 +15,7 @@
     "mysql2": "^2.1.0",
     "mysqli": "^3.0.11",
     "nodemon": "2.0.2",
+    "regenerator-runtime": "^0.13.5",
     "socket.io": "2.3.0"
   },
   "engines": {
@@ -31,6 +32,7 @@
     "ftp-deploy": "^2.3.7",
     "typescript": "3.8.3",
     "webpack": "^4.42.1",
+    "webpack-cli": "^3.3.11",
     "webpack-dev-server": "3.10.3"
   },
   "scripts": {

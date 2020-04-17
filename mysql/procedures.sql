@@ -157,14 +157,16 @@ free: BEGIN
         SET i = multipoint;
         SET k = from_point;
     ELSE
-        SELECT 'ERROR! WRONG MOVE WHITE';
+    /* wrong move white */
+        SELECT 'ERRONE';
         LEAVE free;
     END IF;
     IF(from_point < multipoint AND color = 'b') THEN
         SET i = from_point;
         SET k = multipoint;
     ELSE
-        SELECT 'ERROR! WRONG MOVE BLACK';
+    /* wrong move black */
+        SELECT 'ERRTWO';
         LEAVE free;
     END IF;
     points: WHILE(i < k) DO
