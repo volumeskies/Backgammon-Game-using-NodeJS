@@ -390,7 +390,9 @@ function highlightMoves() {
 
   console.log(args);
 
-  for (var pointNumber in args) {
+  for (var i = 0; i < args.length; i++) {
+    var pointNumber = args[i];
+    console.log(pointNumber);
     if (!pointNumber || !points[pointNumber]) continue;
 
     if (points[pointNumber].childNodes[0] != undefined) {

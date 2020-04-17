@@ -182,7 +182,9 @@ function highlightLast(pointNumber){
 
 function highlightMoves(...args){
     console.log(args);
-    for(let pointNumber in args){
+    for(let i = 0; i < args.length; i++){
+        let pointNumber = args[i];
+        console.log(pointNumber);
         if(!pointNumber || !points[pointNumber]) continue;
         if(points[pointNumber].childNodes[0] != undefined){
             if(points[pointNumber].childNodes[0].className.includes('checker-move'))
