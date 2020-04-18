@@ -184,10 +184,14 @@ var currChecker = {
   pointNumber: 0,
   checkerCount: 0
 };
+var prevOpenCheckers = [];
 socket.on('connect', function () {
   socket.emit('gamestate', {
     room: room
   });
+});
+socket.on('unavailable', function () {
+  _notifications_js__WEBPACK_IMPORTED_MODULE_0__[/* Notify */ "a"].error('Так сходить нельзя!');
 });
 socket.on('game_state', function (data) {
   socket.emit('getGameState', {
@@ -234,7 +238,14 @@ var user2 = {
   points: {}
 };
 var currUser = {
-  login: ''
+  login: '',
+  color: ''
+};
+var currMove = {
+  from: 0,
+  to: 0,
+  multipoint: 0,
+  count: 0
 };
 socket.on('set_values', function (data) {
   console.log(data.data);
@@ -259,6 +270,7 @@ socket.on('set_values', function (data) {
 
     return acc;
   }, {});
+  currUser.color = user1.login == currUser.login ? user1.color : user2.color;
   console.log(currUser);
 });
 
@@ -372,15 +384,142 @@ function parsePointsId(pointId) {
 }
 
 function highlightLast(pointNumber) {
-  var direction = pointNumber > 11 ? 'top' : 'bottom';
+  var direction = pointNumber > 12 ? 'top' : 'bottom';
+  console.log('highlightlast');
+  var className = currUser.color == 'w' ? 'checker-white' : 'checker-black';
 
   if (direction == 'top') {
-    if (points[pointNumber].childNodes.length > 1) points[pointNumber].lastChild.className += ' checker-move';else return;
+    if (points[pointNumber].childNodes.length == 5) {
+      console.log('top equal 4');
+      points[pointNumber].lastChild.className += ' checker-move';
+      points[pointNumber].lastChild.addEventListener('click', function (event) {
+        event.preventDefault(); //placeLastChecker();
+
+        console.log('yes', pointNumber);
+      });
+    } else if (points[pointNumber].childNodes.length < 4) {
+      console.log('top less 4');
+      points[pointNumber].appendChild(insertChecker('checker-move'));
+      points[pointNumber].lastChild.addEventListener('click', function (event) {
+        event.preventDefault();
+        points[pointNumber].lastChild.className.replace(/\bchecker-move\b/ig, className); //placeChecker()
+
+        console.log('yes', pointNumber);
+      });
+    }
+
+    return;
   }
 
   if (direction == 'bottom') {
-    if (points[pointNumber].childNodes.length > 1) points[pointNumber].firstChild.className += ' checker-move';else return;
+    if (points[pointNumber].childNodes.length == 5) {
+      console.log('bottom equal 4');
+      points[pointNumber].firstChild.className += ' checker-move';
+      points[pointNumber].firstChild.addEventListener('click', function (event) {
+        event.preventDefault(); //current points[pointNumber];
+        //placeLastChecker();
+
+        console.log('skdsd', pointNumber);
+        console.log(pointNumber);
+      });
+    } else if (points[pointNumber].childNodes.length < 4) {
+      console.log('bottom less 4');
+      points[pointNumber].prepend(insertChecker('checker-move'));
+      points[pointNumber].firstChild.addEventListener('click', function (event) {
+        event.preventDefault(); //current points[pointNumber];
+
+        points[pointNumber].firstChild.className.replace(/\bchecker-move\b/ig, className); //placeChecker()
+
+        console.log('skdsd', pointNumber);
+        console.log(pointNumber);
+      });
+    }
+
+    return;
   }
+}
+
+function removeListeners() {
+  var _iterator = _createForOfIteratorHelper(prevOpenCheckers),
+      _step;
+
+  try {
+    for (_iterator.s(); !(_step = _iterator.n()).done;) {
+      var elem = _step.value;
+      elem.removeEventListener('mouseover', mouseOver, true);
+      elem.removeEventListener('mouseout', mouseOut, true);
+      elem.removeEventListener('click', clickElem, true);
+    }
+  } catch (err) {
+    _iterator.e(err);
+  } finally {
+    _iterator.f();
+  }
+}
+
+function placeChecker(from, to, multi) {
+  console.log('from, to, multi: ', from, to, multi);
+  console.log('currMove count:', currMove.count);
+  var pace = Math.abs(from - to);
+  console.log('pace', pace);
+
+  if (currMove.count == 2) {
+    unclickElements(checkers);
+    return;
+  }
+
+  if (from > 13) {
+    if (to == multi) {
+      unclickElements(checkers);
+    }
+
+    points[to - 1].removeChild(points[to - 1].lastChild);
+    points[from - 1].removeChild(points[from - 1].lastChild);
+  } else {
+    if (to == multi) {
+      unclickElements(checkers);
+    }
+
+    points[to - 1].removeChild(points[to - 1].firstChild);
+    points[from - 1].removeChild(points[from - 1].firstChild);
+  }
+
+  var className = currUser.color == 'w' ? 'checker-white' : 'checker-black';
+  points[to - 1].appendChild(insertChecker(className));
+  currMove.multi = multi - 1 == to ? multi : 0;
+  currMove.from = from;
+  currMove.to = to;
+  currMove.count++;
+
+  for (var i = 0; i < currDices.length; i++) {
+    if (currDices[i] == pace) {
+      currDices[i] = 0;
+      break;
+    }
+  }
+
+  console.log('place checker dices', currDices);
+  unclickElements(checkers);
+  console.log('currMove:', currMove);
+  socket.emit('makemove', {
+    login: currUser.login,
+    from: from,
+    to: to
+  });
+  removeListeners();
+  showAvailableMoves();
+}
+
+function insertHighlightChecker(checkerClassName, pointNumber, multi) {
+  var checker = document.createElement('div');
+  checker.className = checkerClassName;
+  checker.addEventListener('click', function (event) {
+    event.preventDefault(); //current points[pointNumber];
+
+    console.log('insert highlight:', currChecker.pointNumber, pointNumber);
+    placeChecker(currChecker.pointNumber, pointNumber, multi);
+  });
+  return checker;
 }
 
 function highlightMoves() {
@@ -389,29 +528,37 @@ function highlightMoves() {
   }
 
   console.log(args);
+  var multi = args[0];
+  var flag = false;
 
   for (var i = 0; i < args.length; i++) {
     var pointNumber = args[i];
     console.log(pointNumber);
     if (!pointNumber || !points[pointNumber]) continue;
 
-    if (points[pointNumber].childNodes[0] != undefined) {
-      if (points[pointNumber].childNodes[0].className.includes('checker-move')) return;
-      highlightLast(pointNumber);
-      return;
+    if (points[pointNumber - 1].childNodes[0] != undefined) {
+      if (points[pointNumber - 1].childNodes[0].className.includes('checker-move')) {
+        console.log('here');
+        continue;
+      }
+
+      console.log('ooooor here');
+      highlightLast(pointNumber - 1);
+      continue;
     }
 
-    console.log(pointNumber);
-    points[pointNumber].append(insertChecker('checker-move'));
+    console.log('highlightMoves currchecker ', currChecker.pointNumber);
+    points[pointNumber - 1].append(insertHighlightChecker('checker-move', pointNumber, multi));
   }
 
   ;
 }
 
 function showAvMovesDatabase(from, dices) {
-  from = parsePointsId(from);
   console.log(from);
-  console.log(dices);
+  console.log('dices database', dices);
+  currChecker.pointNumber = from;
+  console.log('database', currChecker.pointNumber);
   socket.emit('free_points', {
     login: currUser.login,
     from: from,
@@ -425,11 +572,8 @@ function showAvMovesDatabase(from, dices) {
       if (key == undefined) key = 0;
     }
 
-    highlightMoves(data.i, data.point_1, data.point_2);
+    highlightMoves(data.multipoint, data.point_1, data.point_2);
   });
-  /*socket.on('check_answer', data =>{
-      parseCheckAnswer(data, from + dicesObj.first, from + dicesObj.second);
-  })*/
 }
 
 function getOpenCheckers() {
@@ -439,12 +583,12 @@ function getOpenCheckers() {
   var checkers = [];
 
   if (color == 'w') {
-    var _iterator = _createForOfIteratorHelper(points),
-        _step;
+    var _iterator2 = _createForOfIteratorHelper(points),
+        _step2;
 
     try {
-      for (_iterator.s(); !(_step = _iterator.n()).done;) {
-        var elem = _step.value;
+      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+        var elem = _step2.value;
 
         if (elem.className == 'points-bottom' && elem.childElementCount != 0) {
           if (elem.firstChild.className.includes('checker-white')) checkers.push(elem.firstChild);
@@ -455,17 +599,17 @@ function getOpenCheckers() {
         }
       }
     } catch (err) {
-      _iterator.e(err);
+      _iterator2.e(err);
     } finally {
-      _iterator.f();
+      _iterator2.f();
     }
   } else if (color == 'b') {
-    var _iterator2 = _createForOfIteratorHelper(points),
-        _step2;
+    var _iterator3 = _createForOfIteratorHelper(points),
+        _step3;
 
     try {
-      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-        var _elem = _step2.value;
+      for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+        var _elem = _step3.value;
 
         if (_elem.className == 'points-bottom' && _elem.childElementCount != 0) {
           if (_elem.firstChild.className.includes('checker-black')) checkers.push(_elem.firstChild);
@@ -476,9 +620,9 @@ function getOpenCheckers() {
         }
       }
     } catch (err) {
-      _iterator2.e(err);
+      _iterator3.e(err);
     } finally {
-      _iterator2.f();
+      _iterator3.f();
     }
   }
 
@@ -489,86 +633,96 @@ function unclickElements(checkers) {
   points.forEach(function (point) {
     var childrenArray = _toConsumableArray(point.childNodes);
 
-    var _iterator3 = _createForOfIteratorHelper(childrenArray),
-        _step3;
+    var _iterator4 = _createForOfIteratorHelper(childrenArray),
+        _step4;
 
     try {
-      for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-        var child = _step3.value;
+      for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+        var child = _step4.value;
         console.log(child);
         if (child.className.includes('checker-move') && (child.nextSibling || child.previousSibling)) child.className = child.className.replace(/\bchecker-move\b/ig, '');else if (child.className.includes('checker-move')) point.removeChild(child);
         continue;
       }
     } catch (err) {
-      _iterator3.e(err);
+      _iterator4.e(err);
     } finally {
-      _iterator3.f();
+      _iterator4.f();
     }
   });
 
-  var _iterator4 = _createForOfIteratorHelper(checkers),
-      _step4;
-
-  try {
-    for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
-      var elem = _step4.value;
-      elem.className = elem.className.replace(/\bchecker-clicked\b/ig, '');
-    }
-  } catch (err) {
-    _iterator4.e(err);
-  } finally {
-    _iterator4.f();
-  }
-}
-
-function showAvailableMoves() {
-  console.log('dices:', currDices);
-  var openCheckers = getOpenCheckers();
-
-  var _iterator5 = _createForOfIteratorHelper(openCheckers),
+  var _iterator5 = _createForOfIteratorHelper(checkers),
       _step5;
 
   try {
-    var _loop = function _loop() {
-      var elem = _step5.value;
-      elem.addEventListener('mouseover', function () {
-        event.preventDefault();
-        elem.className += ' checker-hover';
-      });
-      elem.addEventListener('mouseout', function () {
-        event.preventDefault();
-        elem.className = elem.className.replace(/\bchecker-hover\b/ig, '');
-      });
-      elem.addEventListener('click', function () {
-        if (elem.className.match(/\bchecker-clicked\b/ig)) {
-          elem.className = elem.className.replace(/\bchecker-clicked\b/ig, '');
-          unclickElements(checkers);
-          return;
-        }
-
-        if (elem.className.match(/\bchecker-move\b/ig)) {
-          unclickElements(checkers);
-          event.preventDefault();
-          elem.className += ' checker-clicked'; //clickCheckerMove(currChecker.pointFrom);
-
-          return;
-        }
-
-        unclickElements(checkers);
-        event.preventDefault();
-        elem.className += ' checker-clicked';
-        currChecker.pointFrom = elem.parentNode.id;
-        showAvMovesDatabase(currChecker.pointFrom, currDices);
-      });
-    };
-
     for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
-      _loop();
+      var elem = _step5.value;
+      elem.className = elem.className.replace(/\bchecker-clicked\b/ig, '');
     }
   } catch (err) {
     _iterator5.e(err);
   } finally {
     _iterator5.f();
+  }
+}
+
+function mouseOver() {
+  if (currMove.count == 2) return;
+  event.preventDefault();
+  this.className += ' checker-hover';
+}
+
+function mouseOut() {
+  if (currMove.count == 2) return;
+  event.preventDefault();
+  this.className = this.className.replace(/\bchecker-hover\b/ig, '');
+}
+
+function clickElem() {
+  if (currMove.count == 2) return;
+
+  if (this.className.match(/\bchecker-move\b/ig)) {
+    this.className = this.className.replace(/\bchecker-move\b/ig, '');
+    unclickElements(checkers);
+    event.preventDefault();
+    return;
+  }
+
+  if (this.className.match(/\bchecker-clicked\b/ig)) {
+    this.className = this.className.replace(/\bchecker-clicked\b/ig, '');
+    unclickElements(checkers);
+    return;
+  }
+
+  unclickElements(checkers);
+  event.preventDefault();
+  this.className += ' checker-clicked';
+  currChecker.pointFrom = parsePointsId(this.parentNode.id);
+  console.log(this.parentNode.id);
+  console.log('showavmoves', currChecker.pointFrom);
+  showAvMovesDatabase(currChecker.pointFrom, currDices);
+}
+
+function showAvailableMoves() {
+  console.log('dices:', currDices);
+  if (currMove.count == 2) return;
+  var openCheckers = getOpenCheckers();
+  prevOpenCheckers = openCheckers;
+  console.log(openCheckers);
+
+  var _iterator6 = _createForOfIteratorHelper(openCheckers),
+      _step6;
+
+  try {
+    for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
+      var elem = _step6.value;
+      elem.addEventListener('mouseover', mouseOver, true);
+      elem.addEventListener('mouseout', mouseOut, true);
+      elem.addEventListener('click', clickElem, true);
+    }
+  } catch (err) {
+    _iterator6.e(err);
+  } finally {
+    _iterator6.f();
   }
 }
 
@@ -597,12 +751,12 @@ function drawRolledDices(rolledDices) {
     }
   }
 
-  var _iterator6 = _createForOfIteratorHelper(rolledDices),
-      _step6;
+  var _iterator7 = _createForOfIteratorHelper(rolledDices),
+      _step7;
 
   try {
-    for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
-      var elem = _step6.value;
+    for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
+      var elem = _step7.value;
       var image = document.createElement('img');
       console.log(elem);
 
@@ -639,9 +793,9 @@ function drawRolledDices(rolledDices) {
       }
     }
   } catch (err) {
-    _iterator6.e(err);
+    _iterator7.e(err);
   } finally {
-    _iterator6.f();
+    _iterator7.f();
   }
 }
 
@@ -650,20 +804,20 @@ function clearDiceContainer(container) {
 
   console.log(children);
 
-  var _iterator7 = _createForOfIteratorHelper(children),
-      _step7;
+  var _iterator8 = _createForOfIteratorHelper(children),
+      _step8;
 
   try {
-    for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
-      var child = _step7.value;
+    for (_iterator8.s(); !(_step8 = _iterator8.n()).done;) {
+      var child = _step8.value;
       if (child.tagName == 'H2') continue;
       container.removeChild(child);
       console.log(container);
     }
   } catch (err) {
-    _iterator7.e(err);
+    _iterator8.e(err);
   } finally {
-    _iterator7.f();
+    _iterator8.f();
   }
 }
 
@@ -679,12 +833,12 @@ function rollTheDices() {
     });
   };
 
-  var _iterator8 = _createForOfIteratorHelper(container),
-      _step8;
+  var _iterator9 = _createForOfIteratorHelper(container),
+      _step9;
 
   try {
-    var _loop2 = function _loop2() {
-      var elem = _step8.value;
+    var _loop = function _loop() {
+      var elem = _step9.value;
       elem.addEventListener('click', eventCallback);
       socket.on('rollvalues', function (data) {
         currDices = [data.dice_1, data.dice_2];
@@ -702,28 +856,28 @@ function rollTheDices() {
       });
     };
 
-    for (_iterator8.s(); !(_step8 = _iterator8.n()).done;) {
-      _loop2();
+    for (_iterator9.s(); !(_step9 = _iterator9.n()).done;) {
+      _loop();
     }
   } catch (err) {
-    _iterator8.e(err);
+    _iterator9.e(err);
   } finally {
-    _iterator8.f();
+    _iterator9.f();
   }
 
   if (error == 5) {
-    var _iterator9 = _createForOfIteratorHelper(container),
-        _step9;
+    var _iterator10 = _createForOfIteratorHelper(container),
+        _step10;
 
     try {
-      for (_iterator9.s(); !(_step9 = _iterator9.n()).done;) {
-        var elem = _step9.value;
+      for (_iterator10.s(); !(_step10 = _iterator10.n()).done;) {
+        var elem = _step10.value;
         elem.removeEventListener('click', eventCallback);
       }
     } catch (err) {
-      _iterator9.e(err);
+      _iterator10.e(err);
     } finally {
-      _iterator9.f();
+      _iterator10.f();
     }
 
     error = 0;

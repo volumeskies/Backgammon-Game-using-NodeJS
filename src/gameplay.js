@@ -9,9 +9,15 @@ const currChecker = {
     pointNumber: 0,
     checkerCount: 0
 }
+
+let prevOpenCheckers=[];
 socket.on('connect', ()=>{
     socket.emit('gamestate', {room: room})
 });
+
+socket.on('unavailable', ()=>{
+    Notify.error('Так сходить нельзя!');
+})
 
 socket.on('game_state', data=>{
     socket.emit('getGameState', {room: room});
@@ -55,6 +61,14 @@ let user2={
 
 let currUser = {
     login: '',
+    color: '',
+}
+
+let currMove = {
+    from: 0,
+    to: 0,
+    multipoint: 0,
+    count: 0
 }
 
 socket.on('set_values', data=>{
@@ -78,6 +92,7 @@ socket.on('set_values', data=>{
             }
             return acc;
         }, {})
+    currUser.color = user1.login == currUser.login? user1.color : user2.color;
     console.log(currUser);
 })
 
@@ -165,41 +180,150 @@ function parsePointsId(pointId){
 }
 
 function highlightLast(pointNumber){
-    let direction = pointNumber > 11 ? 'top' : 'bottom';
+    let direction = pointNumber > 12 ? 'top' : 'bottom';
+    console.log('highlightlast')
+    let className = currUser.color == 'w'?'checker-white':'checker-black';
     if(direction == 'top'){
-        if(points[pointNumber].childNodes.length > 1)
+        if(points[pointNumber].childNodes.length == 5){
+            console.log('top equal 4');
             points[pointNumber].lastChild.className += ' checker-move';
+            points[pointNumber].lastChild.addEventListener('click', (event)=>{
+                event.preventDefault();
+                //placeLastChecker();
+                console.log('yes', pointNumber);
+            })
+        }  
         else
+        if(points[pointNumber].childNodes.length < 4){
+            console.log('top less 4');
+            points[pointNumber].appendChild(insertChecker('checker-move'));
+            points[pointNumber].lastChild.addEventListener('click', (event)=>{
+                event.preventDefault();
+                points[pointNumber].lastChild.className.replace(/\bchecker-move\b/ig, className);
+                //placeChecker()
+                console.log('yes', pointNumber);
+            })
+        }
             return;
     }
     if(direction == 'bottom'){
-        if(points[pointNumber].childNodes.length > 1)
+        if(points[pointNumber].childNodes.length == 5){
+            console.log('bottom equal 4');
             points[pointNumber].firstChild.className += ' checker-move';
-        else
+            points[pointNumber].firstChild.addEventListener('click', (event)=>{
+                event.preventDefault();
+                //current points[pointNumber];
+                //placeLastChecker();
+                console.log('skdsd', pointNumber)
+                console.log(pointNumber);
+            })
+        }    
+        else if(points[pointNumber].childNodes.length < 4){
+            console.log('bottom less 4');
+            points[pointNumber].prepend(insertChecker('checker-move'));
+            points[pointNumber].firstChild.addEventListener('click', (event)=>{
+                event.preventDefault();
+                //current points[pointNumber];
+                points[pointNumber].firstChild.className.replace(/\bchecker-move\b/ig, className);
+                //placeChecker()
+                console.log('skdsd', pointNumber)
+                console.log(pointNumber);
+            })
+        }
             return;
     }
+}
+
+function removeListeners(){
+    for(let elem of prevOpenCheckers){
+        elem.removeEventListener('mouseover', mouseOver, true);
+        elem.removeEventListener('mouseout', mouseOut, true);
+        elem.removeEventListener('click', clickElem, true);
+    }
+}
+
+function placeChecker(from, to, multi){
+    console.log('from, to, multi: ', from, to, multi);
+    console.log('currMove count:', currMove.count);
+    let pace = Math.abs(from - to);
+    console.log('pace', pace);
+    if(currMove.count == 2){
+        unclickElements(checkers);
+        return;
+    }
+    if(from > 13){
+        if(to == multi){
+            unclickElements(checkers);
+        }
+        points[to - 1].removeChild(points[to - 1].lastChild);
+        points[from - 1].removeChild(points[from - 1].lastChild);
+    }
+    else{
+        if(to == multi){
+            unclickElements(checkers);
+        }
+        points[to - 1].removeChild(points[to - 1].firstChild);
+        points[from - 1].removeChild(points[from - 1].firstChild);
+    }
+    let className = currUser.color == 'w'?'checker-white':'checker-black';
+    points[to - 1].appendChild(insertChecker(className));
+    currMove.multi = (multi-1) == to? multi : 0;
+    currMove.from = from;
+    currMove.to = to;
+    currMove.count++;
+    for(let i = 0; i < currDices.length; i++){
+        if(currDices[i] == pace){
+            currDices[i] = 0;
+            break;
+        }  
+    }
+    console.log('place checker dices', currDices);
+    unclickElements(checkers);
+    console.log('currMove:', currMove);
+    socket.emit('makemove', {login: currUser.login, from: from, to: to});
+    removeListeners();
+    showAvailableMoves();
+}
+
+function insertHighlightChecker(checkerClassName, pointNumber, multi){
+    let checker = document.createElement('div');
+    checker.className = checkerClassName;
+    checker.addEventListener('click', (event)=>{
+        event.preventDefault();
+        //current points[pointNumber];
+        console.log('insert highlight:', currChecker.pointNumber, pointNumber);
+        placeChecker(currChecker.pointNumber, pointNumber, multi);
+    })
+    return checker;
 }
 
 function highlightMoves(...args){
     console.log(args);
+    let multi = args[0]; 
+    let flag = false;
     for(let i = 0; i < args.length; i++){
         let pointNumber = args[i];
         console.log(pointNumber);
         if(!pointNumber || !points[pointNumber]) continue;
-        if(points[pointNumber].childNodes[0] != undefined){
-            if(points[pointNumber].childNodes[0].className.includes('checker-move'))
-                return;
-            highlightLast(pointNumber);
-            return;
+        if(points[pointNumber - 1].childNodes[0] != undefined){
+            if(points[pointNumber - 1].childNodes[0].className.includes('checker-move')){
+                console.log('here');
+                continue;
+            }
+            console.log('ooooor here');
+            highlightLast(pointNumber - 1);
+            continue;
         }
-        console.log(pointNumber);
-        points[pointNumber].append(insertChecker('checker-move'))};
+        console.log('highlightMoves currchecker ', currChecker.pointNumber);
+        points[pointNumber - 1].append(insertHighlightChecker('checker-move', pointNumber, multi))
+    };
 }
 
 function showAvMovesDatabase(from, dices){
-    from = parsePointsId(from);
     console.log(from);
-    console.log(dices);
+    console.log('dices database', dices);
+    currChecker.pointNumber = from;
+    console.log('database', currChecker.pointNumber)
     socket.emit('free_points', {
         login: currUser.login,
         from: from,
@@ -212,11 +336,8 @@ function showAvMovesDatabase(from, dices){
             if(key == undefined)
                 key = 0;
         }
-        highlightMoves(data.i, data.point_1, data.point_2);
+        highlightMoves(data.multipoint, data.point_1, data.point_2);
     })
-    /*socket.on('check_answer', data =>{
-        parseCheckAnswer(data, from + dicesObj.first, from + dicesObj.second);
-    })*/
 }
 
 function getOpenCheckers(){
@@ -270,37 +391,50 @@ function unclickElements(checkers){
     }
 }
 
+function mouseOver(){
+    if(currMove.count == 2) return;
+    event.preventDefault();
+    this.className += ' checker-hover'
+}
+
+function mouseOut(){
+    if(currMove.count == 2) return;
+    event.preventDefault();
+    this.className = this.className.replace(/\bchecker-hover\b/ig, '');
+}
+
+function clickElem(){
+    if(currMove.count == 2) return;
+    if(this.className.match(/\bchecker-move\b/ig)){
+        this.className = this.className.replace(/\bchecker-move\b/ig, '');
+        unclickElements(checkers);
+        event.preventDefault();
+        return;
+    }
+    if(this.className.match(/\bchecker-clicked\b/ig)){
+        this.className = this.className.replace(/\bchecker-clicked\b/ig, '');
+        unclickElements(checkers);
+        return;
+    }
+    unclickElements(checkers);
+    event.preventDefault();      
+    this.className += ' checker-clicked';
+    currChecker.pointFrom = parsePointsId(this.parentNode.id);
+    console.log(this.parentNode.id);
+    console.log('showavmoves', currChecker.pointFrom)
+    showAvMovesDatabase(currChecker.pointFrom, currDices);
+}
+
 function showAvailableMoves(){
     console.log('dices:', currDices);
+    if(currMove.count == 2) return;
     let openCheckers = getOpenCheckers();
+    prevOpenCheckers = openCheckers;
+    console.log(openCheckers);
     for(let elem of openCheckers){
-        elem.addEventListener('mouseover', ()=>{
-            event.preventDefault();
-            elem.className += ' checker-hover'
-        })
-        elem.addEventListener('mouseout', ()=>{
-            event.preventDefault();
-            elem.className = elem.className.replace(/\bchecker-hover\b/ig, '');
-        })
-        elem.addEventListener('click', ()=>{
-            if(elem.className.match(/\bchecker-clicked\b/ig)){
-                elem.className = elem.className.replace(/\bchecker-clicked\b/ig, '');
-                unclickElements(checkers);
-                return;
-            }
-            if(elem.className.match(/\bchecker-move\b/ig)){
-                unclickElements(checkers);
-                event.preventDefault();
-                elem.className += ' checker-clicked';
-                //clickCheckerMove(currChecker.pointFrom);
-                return;
-            }
-            unclickElements(checkers);
-            event.preventDefault();      
-            elem.className += ' checker-clicked';
-            currChecker.pointFrom = elem.parentNode.id;
-            showAvMovesDatabase(currChecker.pointFrom, currDices);
-        })
+        elem.addEventListener('mouseover', mouseOver, true);
+        elem.addEventListener('mouseout', mouseOut, true);
+        elem.addEventListener('click', clickElem, true);
     }
 }
 

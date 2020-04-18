@@ -471,4 +471,53 @@ io.sockets.on('connection', function(socket){
 			socket.emit('show_freePoints', val);
 		})
 	})
+
+
+	socket.on('makemove', data=>{
+		function makemove(data, callback){
+			con.query('CALL MAKE_MOVE(?, (SELECT password FROM users WHERE login = ?), ?, ?)', [data.login, data.login, data.from, data.to], function(error, result){
+				if(error) throw error;
+				var res = JSON.parse(JSON.stringify(result[0]));
+				console.log(res);
+				if(res[0].ERRONE){
+					console.log('Error wrong password');
+					callback(false);
+				}
+				else if(res[0].ERRTWO){
+					console.log('Error game do not exist');
+					callback(false);
+				}else if(res[0].ERRTHREE){
+					console.log('Error  not your turn');
+					callback(2);
+				}else if(res[0].ERRFOUR){
+					console.log('Error  not available move');
+					callback(3);
+				}
+				else
+				{
+					console.log('Successful move!');
+					callback(4);
+				}
+			})
+		}
+
+		makemove({login: data.login, from: data.from, to: data.to}, (val)=>{
+			if(!val){
+				console.log('error'); return;
+			}
+			if(val == 2){
+				console.log('not your turn!');
+				socket.emit('notturn');
+				return;
+			}
+			if(val == 3){
+				console.log('not available move!');
+				socket.emit('unavailable');
+				return;
+			}
+			if(val == 4){
+				console.log('success');
+			}
+		})
+	})
 });
