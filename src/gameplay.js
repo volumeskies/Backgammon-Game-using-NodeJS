@@ -865,4 +865,4 @@ setTimeout(()=>{
     rollTheDices();
     checkers = [...document.getElementsByClassName('checker')];
 }
-, 5000);
+, 1000);
