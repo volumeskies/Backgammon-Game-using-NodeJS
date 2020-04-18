@@ -210,6 +210,15 @@ socket.on('usernames', function (data) {
     room: room
   });
 });
+socket.on('reload', function (data) {
+  document.location.reload(true);
+});
+socket.on('win', function (data) {
+  _notifications_js__WEBPACK_IMPORTED_MODULE_0__[/* Notify */ "a"].success('Вы выиграли! :)');
+});
+socket.on('lose', function (data) {
+  _notifications_js__WEBPACK_IMPORTED_MODULE_0__[/* Notify */ "a"].error('Вы проиграли :(');
+});
 socket.on('set_username', function (data) {
   username1.login = data.first_login;
   username2.login = data.second_login;
@@ -246,6 +255,11 @@ var currMove = {
   to: 0,
   multipoint: 0,
   count: 0
+};
+var currTo = {
+  to: 0,
+  multi: 0,
+  className: ''
 };
 socket.on('set_values', function (data) {
   console.log(data.data);
@@ -289,20 +303,65 @@ function fillTheBoard() {
 
   for (var key in user1.points) {
     console.log('key:', key);
+    var flag = false;
+    var k = 0;
 
     for (var i = 0; i < user1.points[key]; i++) {
-      console.log('points key:', points[key]);
+      if (i > 4) {
+        k = i;
+        flag = true;
+        break;
+      }
+
+      console.log('points key:', points[key - 1]);
       points[key - 1].append(insertChecker(className1));
+    }
+
+    if (flag) {
+      var tmp = user1.points[key] - k;
+      tmp = tmp == 1 ? 2 : tmp;
+
+      if (key > 13) {
+        points[key - 1].lastChild.textContent = "".concat(tmp);
+      } else {
+        points[key - 1].firstChild.textContent = "".concat(tmp);
+      }
     }
   }
 
   for (var _key in user2.points) {
     console.log('key:', _key);
+    var _flag = false;
+    var _k = 0;
 
     for (var _i = 0; _i < user2.points[_key]; _i++) {
+      if (_i > 4) {
+        _k = _i;
+        _flag = true;
+        break;
+      }
+
       console.log('points key:', points[_key]);
 
       points[_key - 1].append(insertChecker(className2));
+    }
+
+    if (_flag) {
+      var _tmp = user1.points[_key] - _k;
+
+      _tmp = _tmp == 1 ? 2 : _tmp;
+
+      if (_key > 13) {
+        points[_key - 1].lastChild.textContent = "".concat(_tmp);
+      } else {
+        points[_key - 1].firstChild.textContent = "".concat(_tmp);
+      }
+    }
+  }
+
+  for (var _i2 = 0; _i2 < points.length; _i2++) {
+    if (_i2 > 12) {
+      if (points[_i2 - 1].childNodes[0] != undefined) points[_i2 - 1].lastChild.className += ' rotate';
     }
   }
 }
@@ -383,29 +442,279 @@ function parsePointsId(pointId) {
   }
 }
 
-function highlightLast(pointNumber) {
+function placeLastCheckerTop(from, to, multi) {
+  var pace = Math.abs(from - to);
+  console.log('pace', pace);
+
+  if (currMove.count == 2) {
+    unclickElements(checkers);
+    return;
+  }
+
+  if (to == multi) {
+    unclickElements(checkers);
+    currDices = [0, 0];
+    currMove.count = 2;
+  }
+
+  points[to - 1].lastChild.className = points[to - 1].lastChild.className.replace(/\bchecker-move\b/, '');
+
+  if (from > 13) {
+    var _count = points[from - 1].lastChild.textContent;
+    if (!_count) points[from - 1].removeChild(points[from - 1].lastChild);
+    if (_count == 2) points[from - 1].lastChild.textContent = '';
+    if (_count > 2) points[from - 1].lastChild.textContent = _count - 1;
+  } else {
+    var _count2 = points[from - 1].firstChild.textContent;
+    if (!_count2) points[from - 1].removeChild(points[from - 1].firstChild);
+    if (_count2 == 2) points[from - 1].firstChild.textContent = '';
+    if (_count2 > 2) points[from - 1].firstChild.textContent = _count2 - 1;
+  }
+
+  var className = currUser.color == 'w' ? 'checker-white' : 'checker-black';
+  var count = points[to - 1].lastChild.textContent;
+  if (!count) points[to - 1].lastChild.textContent = "".concat(2);else points[to - 1].lastChild.textContent = "".concat(++count);
+  points[to - 1].lastChild.style.transform = 'rotate(-90deg);';
+  currMove.multi = multi - 1 == to ? multi : 0;
+  currMove.from = from;
+  currMove.to = to;
+  currMove.count++;
+
+  for (var i = 0; i < currDices.length; i++) {
+    if (currDices[i] == pace) {
+      currDices[i] = 0;
+      break;
+    }
+  }
+
+  console.log('place checker dices', currDices);
+  unclickElements(checkers);
+  console.log('currMove:', currMove);
+  socket.emit('makemove', {
+    login: currUser.login,
+    from: from,
+    to: to
+  });
+  removeListeners();
+  showAvailableMoves();
+}
+
+function placeCheckerTop(from, to, multi) {
+  console.log('top from, to, multi:', from, to, multi);
+  var pace = Math.abs(from - to);
+  console.log('pace', pace);
+
+  if (currMove.count == 2) {
+    unclickElements(checkers);
+    return;
+  }
+
+  if (to == multi) {
+    unclickElements(checkers);
+    currDices = [0, 0];
+    currMove.count = 2;
+  }
+
+  points[to - 1].removeChild(points[to - 1].lastChild);
+
+  if (from > 13) {
+    var count = points[from - 1].lastChild.textContent;
+    if (!count) points[from - 1].removeChild(points[from - 1].lastChild);
+    if (count == 2) points[from - 1].lastChild.textContent = '';
+    if (count > 2) points[from - 1].lastChild.textContent = count - 1;
+  } else {
+    var _count3 = points[from - 1].firstChild.textContent;
+    if (!_count3) points[from - 1].removeChild(points[from - 1].firstChild);
+    if (_count3 == 2) points[from - 1].firstChild.textContent = '';
+    if (_count3 > 2) points[from - 1].firstChild.textContent = _count3 - 1;
+  }
+
+  var className = currUser.color == 'w' ? 'checker-white' : 'checker-black';
+  points[to - 1].append(insertChecker(className));
+  currMove.multi = multi - 1 == to ? multi : 0;
+  currMove.from = from;
+  currMove.to = to;
+  currMove.count++;
+
+  for (var i = 0; i < currDices.length; i++) {
+    if (currDices[i] == pace) {
+      currDices[i] = 0;
+      break;
+    }
+  }
+
+  console.log('place checker dices', currDices);
+  unclickElements(checkers);
+  console.log('currMove:', currMove);
+  socket.emit('makemove', {
+    login: currUser.login,
+    from: from,
+    to: to
+  });
+  removeListeners();
+  showAvailableMoves();
+}
+
+function placeCheckerBottom(from, to, multi) {
+  console.log('bottom from, to, multi:', from, to, multi);
+  var pace = Math.abs(from - to);
+  console.log('pace', pace);
+
+  if (currMove.count == 2) {
+    unclickElements(checkers);
+    return;
+  }
+
+  if (to == multi) {
+    unclickElements(checkers);
+    currDices = [0, 0];
+    currMove.count = 2;
+  }
+
+  points[to - 1].removeChild(points[to - 1].firstChild);
+
+  if (from > 13) {
+    var count = points[from - 1].lastChild.textContent;
+    if (!count) points[from - 1].removeChild(points[from - 1].lastChild);
+    if (count == 2) points[from - 1].lastChild.textContent = '';
+    if (count > 2) points[from - 1].lastChild.textContent = count - 1;
+  } else {
+    var _count4 = points[from - 1].firstChild.textContent;
+    if (!_count4) points[from - 1].removeChild(points[from - 1].firstChild);
+    if (_count4 == 2) points[from - 1].firstChild.textContent = '';
+    if (_count4 > 2) points[from - 1].firstChild.textContent = _count4 - 1;
+  }
+
+  var className = currUser.color == 'w' ? 'checker-white' : 'checker-black';
+  points[to - 1].prepend(insertChecker(className));
+  currMove.multi = multi - 1 == to ? multi : 0;
+  currMove.from = from;
+  currMove.to = to;
+  currMove.count++;
+
+  for (var i = 0; i < currDices.length; i++) {
+    if (currDices[i] == pace) {
+      currDices[i] = 0;
+      break;
+    }
+  }
+
+  console.log('place checker dices', currDices);
+  unclickElements(checkers);
+  console.log('currMove:', currMove);
+  socket.emit('makemove', {
+    login: currUser.login,
+    from: from,
+    to: to
+  });
+  removeListeners();
+  showAvailableMoves();
+}
+
+function placeLastCheckerBottom(from, to, multi) {
+  console.log('placekdjklfd', from, to, multi);
+  var pace = Math.abs(from - to);
+  console.log('pace', pace);
+
+  if (currMove.count == 2) {
+    unclickElements(checkers);
+    return;
+  }
+
+  if (to == multi) {
+    unclickElements(checkers);
+    currDices = [0, 0];
+    currMove.count = 2;
+  }
+
+  points[to - 1].firstChild.className = points[to - 1].firstChild.className.replace(/\bchecker-move\b/, '');
+
+  if (from > 13) {
+    var _count5 = points[from - 1].lastChild.textContent;
+    if (!_count5) points[from - 1].removeChild(points[from - 1].lastChild);
+    if (_count5 == 2) points[from - 1].lastChild.textContent = '';
+    if (_count5 > 2) points[from - 1].lastChild.textContent = _count5 - 1;
+  } else {
+    var _count6 = points[from - 1].firstChild.textContent;
+    if (!_count6) points[from - 1].removeChild(points[from - 1].firstChild);
+    if (_count6 == 2) points[from - 1].firstChild.textContent = '';
+    if (_count6 > 2) points[from - 1].firstChild.textContent = _count6 - 1;
+  }
+
+  var className = currUser.color == 'w' ? 'checker-white' : 'checker-black';
+  var count = points[to - 1].firstChild.textContent;
+  if (!count) points[to - 1].firstChild.textContent = "".concat(2);else points[to - 1].firstChild.textContent = "".concat(++count);
+  currMove.multi = multi - 1 == to ? multi : 0;
+  currMove.from = from;
+  currMove.to = to;
+  currMove.count++;
+
+  for (var i = 0; i < currDices.length; i++) {
+    if (currDices[i] == pace) {
+      currDices[i] = 0;
+      break;
+    }
+  }
+
+  console.log('place checker dices', currDices);
+  unclickElements(checkers);
+  console.log('currMove:', currMove);
+  socket.emit('makemove', {
+    login: currUser.login,
+    from: from,
+    to: to
+  });
+  removeListeners();
+  showAvailableMoves();
+}
+
+function eventPlaceLastCheckerTop() {
+  event.preventDefault();
+  placeLastCheckerTop(currChecker.pointNumber, currTo.to + 1, currTo.multi);
+  console.log('yes', pointNumber);
+}
+
+function eventPlaceCheckerTop() {
+  event.preventDefault();
+  this.className.replace(/\bchecker-move\b/ig, currTo.className);
+  placeCheckerTop(currChecker.pointNumber, currTo.to + 1, currTo.multi);
+  console.log('yes', pointNumber);
+}
+
+function eventPlaceLastCheckerBottom() {
+  event.preventDefault();
+  placeLastCheckerBottom(currChecker.pointNumber, currTo.to + 1, currTo.multi);
+  console.log('skdsjdklsdjlkssd', pointNumber);
+  console.log(pointNumber);
+}
+
+function eventPlaceCheckerBottom() {
+  event.preventDefault();
+  this.className.replace(/\bchecker-move\b/ig, currTo.className);
+  placeCheckerBottom(currChecker.pointNumber, currTo.to + 1, currTo.multi);
+  console.log('skdsd', pointNumber);
+  console.log(pointNumber);
+}
+
+function highlightLast(pointNumber, multi) {
   var direction = pointNumber > 12 ? 'top' : 'bottom';
   console.log('highlightlast');
   var className = currUser.color == 'w' ? 'checker-white' : 'checker-black';
+  currTo.className = className;
 
   if (direction == 'top') {
     if (points[pointNumber].childNodes.length == 5) {
-      console.log('top equal 4');
+      console.log('top equal 4', pointNumber);
       points[pointNumber].lastChild.className += ' checker-move';
-      points[pointNumber].lastChild.addEventListener('click', function (event) {
-        event.preventDefault(); //placeLastChecker();
-
-        console.log('yes', pointNumber);
-      });
-    } else if (points[pointNumber].childNodes.length < 4) {
-      console.log('top less 4');
+      currTo.to = pointNumber;
+      currTo.multi = multi;
+      points[pointNumber].lastChild.addEventListener('click', eventPlaceLastCheckerTop, true);
+    } else if (points[pointNumber].childNodes.length < 5) {
+      console.log('top less 4', pointNumber);
+      currTo.to = pointNumber;
+      currTo.multi = multi;
       points[pointNumber].appendChild(insertChecker('checker-move'));
-      points[pointNumber].lastChild.addEventListener('click', function (event) {
-        event.preventDefault();
-        points[pointNumber].lastChild.className.replace(/\bchecker-move\b/ig, className); //placeChecker()
-
-        console.log('yes', pointNumber);
-      });
+      points[pointNumber].lastChild.addEventListener('click', eventPlaceCheckerTop, true);
     }
 
     return;
@@ -413,26 +722,17 @@ function highlightLast(pointNumber) {
 
   if (direction == 'bottom') {
     if (points[pointNumber].childNodes.length == 5) {
-      console.log('bottom equal 4');
+      console.log('bottom equal 4', pointNumber);
       points[pointNumber].firstChild.className += ' checker-move';
-      points[pointNumber].firstChild.addEventListener('click', function (event) {
-        event.preventDefault(); //current points[pointNumber];
-        //placeLastChecker();
-
-        console.log('skdsd', pointNumber);
-        console.log(pointNumber);
-      });
-    } else if (points[pointNumber].childNodes.length < 4) {
-      console.log('bottom less 4');
+      currTo.to = pointNumber;
+      currTo.multi = multi;
+      points[pointNumber].firstChild.addEventListener('click', eventPlaceLastCheckerBottom, true);
+    } else if (points[pointNumber].childNodes.length < 5) {
+      console.log('bottom less 4', pointNumber);
       points[pointNumber].prepend(insertChecker('checker-move'));
-      points[pointNumber].firstChild.addEventListener('click', function (event) {
-        event.preventDefault(); //current points[pointNumber];
-
-        points[pointNumber].firstChild.className.replace(/\bchecker-move\b/ig, className); //placeChecker()
-
-        console.log('skdsd', pointNumber);
-        console.log(pointNumber);
-      });
+      currTo.to = pointNumber;
+      currTo.multi = multi;
+      points[pointNumber].firstChild.addEventListener('click', eventPlaceCheckerBottom, true);
     }
 
     return;
@@ -449,6 +749,10 @@ function removeListeners() {
       elem.removeEventListener('mouseover', mouseOver, true);
       elem.removeEventListener('mouseout', mouseOut, true);
       elem.removeEventListener('click', clickElem, true);
+      elem.removeEventListener('click', eventPlaceLastCheckerTop, true);
+      elem.removeEventListener('click', eventPlaceCheckerTop, true);
+      elem.removeEventListener('click', eventPlaceLastCheckerBottom, true);
+      elem.removeEventListener('click', eventPlaceCheckerBottom, true);
     }
   } catch (err) {
     _iterator.e(err);
@@ -468,20 +772,29 @@ function placeChecker(from, to, multi) {
     return;
   }
 
+  if (to > 13) points[to - 1].removeChild(points[to - 1].lastChild);else points[to - 1].removeChild(points[to - 1].firstChild);
+
   if (from > 13) {
     if (to == multi) {
       unclickElements(checkers);
+      currDices = [0, 0];
+      currMove.count = 2;
     }
 
-    points[to - 1].removeChild(points[to - 1].lastChild);
-    points[from - 1].removeChild(points[from - 1].lastChild);
+    var count = points[from - 1].lastChild.textContent;
+    if (!count) points[from - 1].removeChild(points[from - 1].lastChild);
+    if (count == 2) points[from - 1].lastChild.textContent = '';
+    if (count > 2) points[from - 1].lastChild.textContent = count - 1;
   } else {
     if (to == multi) {
       unclickElements(checkers);
+      currDices = [0, 0];
     }
 
-    points[to - 1].removeChild(points[to - 1].firstChild);
-    points[from - 1].removeChild(points[from - 1].firstChild);
+    var _count7 = points[from - 1].firstChild.textContent;
+    if (!_count7) points[from - 1].removeChild(points[from - 1].firstChild);
+    if (_count7 == 2) points[from - 1].firstChild.textContent = '';
+    if (_count7 > 2) points[from - 1].firstChild.textContent = _count7 - 1;
   }
 
   var className = currUser.color == 'w' ? 'checker-white' : 'checker-black';
@@ -532,23 +845,24 @@ function highlightMoves() {
   var flag = false;
 
   for (var i = 0; i < args.length; i++) {
-    var pointNumber = args[i];
-    console.log(pointNumber);
-    if (!pointNumber || !points[pointNumber]) continue;
+    var _pointNumber = args[i];
+    console.log(_pointNumber);
+    if (!_pointNumber || !points[_pointNumber]) continue;
 
-    if (points[pointNumber - 1].childNodes[0] != undefined) {
-      if (points[pointNumber - 1].childNodes[0].className.includes('checker-move')) {
+    if (points[_pointNumber - 1].childNodes[0] != undefined) {
+      if (points[_pointNumber - 1].childNodes[0].className.includes('checker-move')) {
         console.log('here');
         continue;
       }
 
       console.log('ooooor here');
-      highlightLast(pointNumber - 1);
+      highlightLast(_pointNumber - 1, multi);
       continue;
     }
 
     console.log('highlightMoves currchecker ', currChecker.pointNumber);
-    points[pointNumber - 1].append(insertHighlightChecker('checker-move', pointNumber, multi));
+
+    points[_pointNumber - 1].append(insertHighlightChecker('checker-move', _pointNumber, multi));
   }
 
   ;
@@ -743,11 +1057,29 @@ function drawRolledDices(rolledDices) {
     firstplayer[0].className += ' roll';
     currentContainer = firstplayer;
     firstButton.className = firstButton.className.replace(/\bhide\b/ig, '');
+    firstButton.addEventListener('click', function () {
+      event.preventDefault();
+      if (currMove.count != 2) return;
+      console.log('firstbutton');
+      socket.emit('checkwinner', {
+        id_game: room,
+        login: currUser.login
+      });
+    });
   } else {
     if (container[1].firstElementChild.textContent == username2.name && currUser.login == username2.login) {
       secondplayer[0].className += ' roll';
       currentContainer = secondplayer;
       secondButton.className = secondButton.className.replace(/\bhide\b/ig, '');
+      secondButton.addEventListener('click', function () {
+        event.preventDefault();
+        if (currMove.count != 2) return;
+        console.log('secondbutton');
+        socket.emit('checkwinner', {
+          id_game: room,
+          login: currUser.login
+        });
+      });
     }
   }
 

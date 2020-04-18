@@ -520,4 +520,58 @@ io.sockets.on('connection', function(socket){
 			}
 		})
 	})
+
+	socket.on('checkwinner', data=>{
+		function checkwinner(data, callback){
+			con.query('CALL CHECKWINNER(?)', [data.id_game], function(error, result){
+				if(error) throw error;
+				console.log(result);
+				var res = JSON.parse(JSON.stringify(result[0]));
+				if(res[0].FALSE){
+					console.log('not yet');
+					callback(false);
+				}else{
+					callback(res[0]);
+				}
+			})
+		}
+
+		checkwinner(data.id_game, (val)=>{
+			if(!val){
+				console.log('there is no winner yet');
+				return;
+			}else{
+				if(val.login1){
+					let sockID = 0;
+					let loseID = 0;
+					for(let key in users){
+						if(users[key].login === val.login1)
+							sockID = users[key].socket;
+						else
+							loseID = users[key].socket;
+					}
+					io.to(`${sockID}`).emit('win');
+					io.to(`${loseID}`).emit('lose');
+				}else if(val.login2){
+					let sockID = 0;
+					let loseID = 0;
+					for(let key in users){
+						if(users[key].login === val.login2)
+							sockID = users[key].socket;
+						else
+							loseID = users[key].socket;
+					}
+					io.to(`${sockID}`).emit('win');
+					io.to(`${loseID}`).emit('lose');
+				}
+			}
+		})
+		let socketID = 0;
+		for(let key in users){
+			if(users[key].login !== data.login)
+				socketID = users[key].socket;
+		}
+		console.log('check', socket.id, socketID);
+		io.to(`${socketID}`).emit('reload');
+	})
 });
