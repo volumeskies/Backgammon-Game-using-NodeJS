@@ -1056,6 +1056,7 @@ function drawRolledDices(rolledDices) {
   if (container[0].firstElementChild.textContent == username1.name && currUser.login == username1.login) {
     firstplayer[0].className += ' roll';
     currentContainer = firstplayer;
+    console.log(currentContainer);
     firstButton.className = firstButton.className.replace(/\bhide\b/ig, '');
     firstButton.addEventListener('click', function () {
       event.preventDefault();
@@ -1070,6 +1071,7 @@ function drawRolledDices(rolledDices) {
     if (container[1].firstElementChild.textContent == username2.name && currUser.login == username2.login) {
       secondplayer[0].className += ' roll';
       currentContainer = secondplayer;
+      console.log(currentContainer);
       secondButton.className = secondButton.className.replace(/\bhide\b/ig, '');
       secondButton.addEventListener('click', function () {
         event.preventDefault();
@@ -1091,6 +1093,7 @@ function drawRolledDices(rolledDices) {
       var elem = _step7.value;
       var image = document.createElement('img');
       console.log(elem);
+      console.log(currentContainer);
 
       switch (elem) {
         case 1:
