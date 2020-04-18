@@ -1,1 +1,1 @@
-web: nodemon --experimental-modules src/server.js
+web: node --experimental-modules src/server.js
