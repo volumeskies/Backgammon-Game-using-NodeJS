@@ -858,11 +858,15 @@ function rollTheDices(){
     
 }
 
-let checkers = '';
-setTimeout(()=>{
+function timer(){
     fillTheBoard();
     drawRolledDices([1,1]);
     rollTheDices();
     checkers = [...document.getElementsByClassName('checker')];
 }
-, 1000);
+
+let checkers = '';
+setTimeout(()=>{
+    timer();
+}
+, 10000);

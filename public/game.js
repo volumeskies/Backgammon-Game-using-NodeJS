@@ -1219,13 +1219,17 @@ function rollTheDices() {
   }
 }
 
-var checkers = '';
-setTimeout(function () {
+function timer() {
   fillTheBoard();
   drawRolledDices([1, 1]);
   rollTheDices();
   checkers = _toConsumableArray(document.getElementsByClassName('checker'));
-}, 1000);
+}
+
+var checkers = '';
+setTimeout(function () {
+  timer();
+}, 10000);
 
 /***/ })
 /******/ ]);
