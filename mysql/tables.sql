@@ -38,15 +38,19 @@ ALTER TABLE `points` ADD CONSTRAINT fk_pp FOREIGN KEY(id_player) REFERENCES play
 CREATE TABLE moves(
 	id_player int unsigned,
     point_from int unsigned,
-    point_to int unsigned
+    point_to int unsigned,
+    point_from2 int unsigned,
+    point_to2 int unsigned,
+    date timestamp
 );
-ALTER TABLE `moves` ADD CONSTRAINT pk PRIMARY KEY(id_player, point_from, point_to);
+ALTER TABLE `moves` ADD CONSTRAINT pk PRIMARY KEY(id_player, point_from, point_to, point_from2, point_to2, date);
 ALTER TABLE `moves` modify column id_player INT NOT NULL;
 ALTER TABLE `moves` ADD CONSTRAINT fk_mp FOREIGN KEY(id_player) REFERENCES players(id_player);
 
 CREATE TABLE invites(
     id_inviting int unsigned,
     id_invited int unsigned,
-    confirmation tinyint(1)
+    confirmation tinyint(1),
+    date timestamp
 );
-ALTER TABLE `invites` ADD CONSTRAINT pk PRIMARY KEY(id_inviting, id_invited);
+ALTER TABLE `invites` ADD CONSTRAINT pk PRIMARY KEY(id_inviting, id_invited, confirmation, date);

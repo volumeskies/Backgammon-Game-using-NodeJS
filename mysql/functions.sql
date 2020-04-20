@@ -30,7 +30,7 @@ DELIMITER //
 CREATE FUNCTION get_player_id(u_id INT)
 RETURNS INT
 BEGIN
-    RETURN (SELECT id_player FROM players WHERE id_user = u_id);
+    RETURN (SELECT MAX(id_player) FROM players WHERE id_user = u_id);
 END //
 
 DELIMITER //
@@ -55,6 +55,23 @@ BEGIN
 END //
 
 DELIMITER //
+CREATE FUNCTION is_multipoint_free(p_number int, player_id int)
+RETURNS BOOLEAN
+BEGIN
+    DECLARE i BOOLEAN;
+    DECLARE player_2 INT;
+    DECLARE g_id INT;
+    SET g_id = (SELECT id_game FROM players WHERE id_player = player_id);
+    SET player_2 = (SELECT id_player FROM players WHERE id_game = g_id AND id_player <> player_id);
+    IF((SELECT 1 FROM points WHERE point_number = p_number AND id_player = player_id) IS NULL AND (SELECT 1 FROM points WHERE point_number = p_number AND id_player = player_2) IS NULL) THEN
+    	SET i = true;
+    ELSE
+    	SET i = false;
+    END IF;
+    RETURN i;
+END //
+
+DELIMITER //
 CREATE FUNCTION turn(player_id int)
 RETURNS BOOLEAN
 BEGIN
@@ -65,4 +82,4 @@ BEGIN
        RETURN FALSE;
     ELSE RETURN TRUE;
     END IF;
-END //
+END//
